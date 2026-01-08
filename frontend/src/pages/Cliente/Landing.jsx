@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import Modal from '../../components/Modal';
 
@@ -14,6 +15,7 @@ const MoonIcon = ({ className }) => (
 );
 
 const Landing = () => {
+  const navigate = useNavigate();
   const backendBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
   const [estanteriasConProductos, setEstanteriasConProductos] = useState({});
@@ -117,7 +119,7 @@ const Landing = () => {
               >
                 {isDarkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
               </button>
-              <button onClick={() => window.location.href = '/login'} className="text-[10px] uppercase tracking-widest font-bold border border-text-primary px-4 py-2 hover:bg-pink-primary hover:border-pink-primary hover:text-white active:scale-95 transition-all duration-300 rounded-sm">
+              <button onClick={() => navigate('/login')} className="text-[10px] uppercase tracking-widest font-bold border border-text-primary px-4 py-2 hover:bg-pink-primary hover:border-pink-primary hover:text-white active:scale-95 transition-all duration-300 rounded-sm">
                 Admin
               </button>
             </div>
