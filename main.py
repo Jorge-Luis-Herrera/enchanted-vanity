@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from pathlib import Path
 
@@ -209,17 +210,19 @@ async def crear_producto(
             cursor.execute("SELECT COUNT(*) as total FROM productos")
             resultado = cursor.fetchone()
             if resultado['total'] >= MAX_PRODUCTOS_TOTALES:
-                return {"error": "Límite global de productos alcanzado. No se pueden agregar más."}
+                return JSONResponse(status_code=400, content={"message": "Límite global de productos alcanzado. No se pueden agregar más."})
 
             # 2. Si llega archivo, guardamos y usamos esa ruta como imagen_url
             final_imagen = imagen_url
             if file is not None and file.filename:
-                safe_name = f"{int(time.time())}_{file.filename}"
+                # Sanitizar nombre: quitar espacios y caracteres raros
+                clean_name = re.sub(r'[^a-zA-Z0-9.-]', '_', file.filename)
+                safe_name = f"{int(time.time())}_{clean_name}"
                 dest_path = uploads_dir / safe_name
                 with dest_path.open("wb") as f:
                     f.write(await file.read())
-                # Guardamos ruta accesible desde el frontend (URL absoluta)
-                final_imagen = f"{PUBLIC_BASE_URL}/uploads/{safe_name}"
+                # Guardamos ruta RELATIVA accesible desde el frontend
+                final_imagen = f"/uploads/{safe_name}"
 
             # 3. Insertar el producto de forma segura
             sql = """
