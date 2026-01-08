@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isShelfModalOpen, setIsShelfModalOpen] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
 
   useEffect(() => {
@@ -85,6 +86,7 @@ const Dashboard = () => {
   };
 
   const handleCrearProducto = async (nuevoProducto) => {
+    setIsUploading(true);
     try {
       const productData = activeShelf
         ? { ...nuevoProducto, estanteria_id: activeShelf.id }
@@ -110,6 +112,8 @@ const Dashboard = () => {
     } catch (error) {
       const msg = error.response?.data?.message || error.response?.data?.detail || "Error al crear producto";
       alert(msg);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -159,6 +163,15 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-bg-primary text-text-primary font-sans selection:bg-pink-pale transition-colors duration-300">
+      {/* Upload Loading Overlay */}
+      {isUploading && (
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-bg-primary/90 backdrop-blur-sm animate-fade-in">
+          <div className="w-12 h-12 border-4 border-pink-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-[10px] uppercase tracking-[0.4em] font-bold text-pink-primary animate-pulse">
+            Subiendo Producto...
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="bg-bg-primary/80 backdrop-blur-md border-b border-grey-light/20 px-8 py-6 flex justify-between items-center sticky top-0 z-30 transition-colors">
         <div className="space-y-1">
