@@ -64,7 +64,7 @@ PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:5173", "*"],
+    allow_origins=[FRONTEND_URL, "http://localhost:5173", "https://enchanted-vanity.netlify.app", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
