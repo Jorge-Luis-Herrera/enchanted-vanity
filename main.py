@@ -137,8 +137,8 @@ def obtener_inventario():
             # Empty shelves are handled by /estanterias endpoint
             sql = """
             SELECT e.nombre as estanteria, e.descripcion as estanteria_desc, e.imagen_url as estanteria_img, p.* 
-            FROM estanterias e 
-            INNER JOIN productos p ON e.id = p.estanteria_id
+            FROM productos p
+            LEFT JOIN estanterias e ON e.id = p.estanteria_id
             """
             cursor.execute(sql)
             resultados = cursor.fetchall()

@@ -12,6 +12,17 @@ const Dashboard = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isShelfModalOpen, setIsShelfModalOpen] = useState(false);
   const [cargando, setCargando] = useState(true);
+  const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
 
   // Shelf Creation State
   const [newShelfName, setNewShelfName] = useState("");
@@ -145,18 +156,34 @@ const Dashboard = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-[#FCFAFA] text-[#1A1A1A] font-sans selection:bg-pink-100">
+    <div className="min-h-screen bg-bg-primary text-text-primary font-sans selection:bg-pink-pale transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-6 flex justify-between items-center sticky top-0 z-30">
+      <header className="bg-bg-primary/80 backdrop-blur-md border-b border-grey-light/20 px-8 py-6 flex justify-between items-center sticky top-0 z-30 transition-colors">
         <div className="space-y-1">
-          <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-pink-400">
+          <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-pink-primary">
             {activeShelf ? `Estantería / ${activeShelf.nombre}` : "Panel de Control"}
           </div>
-          <h1 className="text-2xl font-light tracking-tight">
+          <h1 className="text-2xl font-light tracking-tight text-text-primary">
             {activeShelf ? "Gestionar Productos" : "Mis Estanterías"}
           </h1>
         </div>
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsDark(!isDark)}
+            className="w-10 h-10 flex items-center justify-center rounded-full border border-grey-light/20 hover:bg-pink-pale/10 transition-all text-grey-medium"
+            title="Cambiar Tema"
+          >
+            {isDark ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M3 12h2.25m.386-6.364l1.591 1.591M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+              </svg>
+            )}
+          </button>
+
           {activeShelf && (
             <button
               onClick={() => setActiveShelf(null)}
@@ -168,14 +195,14 @@ const Dashboard = () => {
 
           <button
             onClick={() => activeShelf ? setIsProductModalOpen(true) : setIsShelfModalOpen(true)}
-            className="bg-black text-white px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gray-800 transition-all shadow-lg shadow-gray-200"
+            className="bg-text-primary text-bg-primary px-6 py-3 text-[10px] uppercase tracking-widest font-bold hover:opacity-90 transition-all shadow-lg shadow-grey-light/10"
           >
             {activeShelf ? "+ Añadir Producto" : "+ Nueva Estantería"}
           </button>
 
           <button
             onClick={() => { localStorage.clear(); window.location.href = '/login' }}
-            className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 hover:bg-red-50 hover:border-red-100 hover:text-red-500 transition-all"
+            className="w-10 h-10 flex items-center justify-center rounded-full border border-grey-light/20 hover:bg-pink-pale/10 hover:border-pink-primary/30 hover:text-pink-primary transition-all text-grey-medium"
             title="Cerrar Sesión"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
@@ -199,12 +226,12 @@ const Dashboard = () => {
                     <div
                       key={shelf.id}
                       onClick={() => setActiveShelf(shelf)}
-                      className="group bg-white p-6 border border-gray-100 hover:border-pink-200 hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all cursor-pointer relative overflow-hidden flex flex-col justify-end min-h-[200px]"
+                      className="group bg-bg-primary p-6 border border-grey-light/20 hover:border-pink-primary/50 hover:shadow-[0_20px_40px_rgba(0,0,0,0.04)] transition-all cursor-pointer relative overflow-hidden flex flex-col justify-end min-h-[200px] rounded-sm"
                     >
                       {shelf.imagen_url && (
                         <div className="absolute inset-0">
                           <img src={shelf.imagen_url} alt={shelf.nombre} className="w-full h-full object-cover opacity-10 group-hover:opacity-20 transition-opacity" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-bg-primary via-bg-primary/80 to-transparent transition-colors"></div>
                         </div>
                       )}
 
@@ -221,14 +248,14 @@ const Dashboard = () => {
                       </div>
 
                       <div className="relative z-10 space-y-2">
-                        <div className="w-12 h-1 bg-pink-500/20 group-hover:bg-pink-500 group-hover:w-20 transition-all duration-500"></div>
+                        <div className="w-12 h-1 bg-pink-primary/20 group-hover:bg-pink-primary group-hover:w-20 transition-all duration-500"></div>
                         <div>
-                          <h2 className="text-2xl font-light text-gray-900 group-hover:translate-x-2 transition-transform duration-500">{shelf.nombre}</h2>
+                          <h2 className="text-2xl font-light text-text-primary group-hover:translate-x-2 transition-transform duration-500">{shelf.nombre}</h2>
                           {shelf.descripcion && (
-                            <p className="text-[10px] text-gray-400 font-light line-clamp-2 mt-1 max-w-[90%]">{shelf.descripcion}</p>
+                            <p className="text-[10px] text-grey-medium font-light line-clamp-2 mt-1 max-w-[90%]">{shelf.descripcion}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest group-hover:text-pink-400 transition-colors pt-2">
+                        <div className="flex items-center gap-2 text-xs text-grey-medium uppercase tracking-widest group-hover:text-pink-primary transition-colors pt-2">
                           <span>{count} Productos</span>
                           <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
                         </div>
@@ -243,11 +270,11 @@ const Dashboard = () => {
             {activeShelf && (
               <div className="space-y-8">
                 {productsInShelf.length === 0 ? (
-                  <div className="text-center py-20 border border-dashed border-gray-200 rounded-lg">
-                    <p className="text-sm text-gray-400 uppercase tracking-widest">Estantería Vacía</p>
+                  <div className="text-center py-20 border border-dashed border-grey-light/20 rounded-lg">
+                    <p className="text-sm text-grey-medium uppercase tracking-widest">Estantería Vacía</p>
                     <button
                       onClick={() => setIsProductModalOpen(true)}
-                      className="mt-4 text-pink-500 hover:text-pink-600 text-xs font-bold uppercase tracking-widest border-b border-pink-200"
+                      className="mt-4 text-pink-primary hover:text-pink-primary transition-colors text-xs font-bold uppercase tracking-widest border-b border-pink-primary/20"
                     >
                       Añadir primer producto
                     </button>
@@ -255,7 +282,7 @@ const Dashboard = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8">
                     {productsInShelf.map((prod) => (
-                      <div key={prod.id} className="bg-white p-4 border border-gray-100 space-y-4 hover:shadow-xl transition-shadow group relative">
+                      <div key={prod.id} className="bg-bg-primary p-4 border border-grey-light/20 space-y-4 hover:shadow-2xl transition-all group relative rounded-sm">
                         <button
                           onClick={() => eliminarProducto(prod.id)}
                           className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -263,32 +290,32 @@ const Dashboard = () => {
                           ×
                         </button>
 
-                        <div className="aspect-square bg-gray-50 overflow-hidden relative">
+                        <div className="aspect-square bg-grey-light/10 overflow-hidden relative">
                           {prod.imagen_url ? (
                             <img src={resolveImage(prod.imagen_url)} alt={prod.nombre} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-200 text-2xl">IMG</div>
+                            <div className="w-full h-full flex items-center justify-center text-grey-light text-2xl">IMG</div>
                           )}
                         </div>
 
                         <div className="space-y-2">
-                          <h3 className="font-medium text-gray-900 truncate">{prod.nombre}</h3>
-                          <div className="flex justify-between items-center bg-gray-50 p-2 rounded">
-                            <span className="text-xs uppercase text-gray-500 tracking-wider">Stock</span>
-                            <span className={`font-mono font-bold ${prod.cantidad_stock < 5 ? 'text-red-500' : 'text-gray-700'}`}>{prod.cantidad_stock}</span>
+                          <h3 className="font-medium text-text-primary truncate">{prod.nombre}</h3>
+                          <div className="flex justify-between items-center bg-grey-light/5 p-2 rounded">
+                            <span className="text-xs uppercase text-grey-medium tracking-wider">Stock</span>
+                            <span className={`font-mono font-bold ${prod.cantidad_stock < 5 ? 'text-pink-primary' : 'text-text-primary'}`}>{prod.cantidad_stock}</span>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2 pt-2">
                             <button
                               onClick={() => actualizarStock(prod.id, 'comprar')}
-                              className="py-2 bg-black text-white text-[10px] uppercase font-bold hover:bg-gray-800"
+                              className="py-2 bg-text-primary text-bg-primary text-[10px] uppercase font-bold hover:opacity-90 transition-opacity"
                             >
                               +1
                             </button>
                             <button
                               onClick={() => actualizarStock(prod.id, 'vender')}
                               disabled={prod.cantidad_stock <= 0}
-                              className="py-2 border border-gray-200 text-gray-600 text-[10px] uppercase font-bold hover:bg-red-50 disabled:opacity-50"
+                              className="py-2 border border-grey-light/30 text-text-primary text-[10px] uppercase font-bold hover:bg-pink-pale/10 disabled:opacity-50 transition-colors"
                             >
                               -1
                             </button>
@@ -318,29 +345,29 @@ const Dashboard = () => {
       <Modal isOpen={isShelfModalOpen} onClose={() => setIsShelfModalOpen(false)} title="Nueva Estantería">
         <form onSubmit={handleCrearEstanteria} className="space-y-6">
           <div>
-            <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">Nombre de la Colección</label>
+            <label className="block text-xs uppercase tracking-widest text-grey-medium mb-2 font-bold">Nombre de la Colección</label>
             <input
               type="text"
               value={newShelfName}
               onChange={(e) => setNewShelfName(e.target.value)}
-              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300 mb-4"
+              className="w-full border-b border-grey-light/30 py-2 focus:outline-none focus:border-pink-primary transition-colors bg-transparent placeholder-grey-light/50 mb-4 text-text-primary"
               placeholder="Ej. Cuidado Facial"
               required
             />
-            <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">Descripción (Opcional)</label>
+            <label className="block text-xs uppercase tracking-widest text-grey-medium mb-2 font-bold">Descripción (Opcional)</label>
             <input
               type="text"
               value={newShelfDesc}
               onChange={(e) => setNewShelfDesc(e.target.value)}
-              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300 mb-4"
+              className="w-full border-b border-grey-light/30 py-2 focus:outline-none focus:border-pink-primary transition-colors bg-transparent placeholder-grey-light/50 mb-4 text-text-primary"
               placeholder="Ej. Productos para el verano..."
             />
-            <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2 font-bold">URL Imagen (Opcional)</label>
+            <label className="block text-xs uppercase tracking-widest text-grey-medium mb-2 font-bold">URL Imagen (Opcional)</label>
             <input
               type="text"
               value={newShelfImg}
               onChange={(e) => setNewShelfImg(e.target.value)}
-              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors bg-transparent placeholder-gray-300"
+              className="w-full border-b border-grey-light/30 py-2 focus:outline-none focus:border-pink-primary transition-colors bg-transparent placeholder-grey-light/50 text-text-primary"
               placeholder="https://..."
             />
           </div>
@@ -348,13 +375,13 @@ const Dashboard = () => {
             <button
               type="button"
               onClick={() => setIsShelfModalOpen(false)}
-              className="text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-black"
+              className="text-[10px] uppercase tracking-widest font-bold text-grey-medium hover:text-pink-primary transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-black text-white px-8 py-3 text-[10px] uppercase tracking-widest font-bold hover:bg-gray-900"
+              className="bg-text-primary text-bg-primary px-8 py-3 text-[10px] uppercase tracking-widest font-bold hover:opacity-90 transition-opacity"
             >
               Crear Estantería
             </button>

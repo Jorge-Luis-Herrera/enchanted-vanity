@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const ProductoForm = ({ estanterias, onSubmit, onCancel }) => {
+const ProductoForm = ({ estanterias, defaultShelfId, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -8,7 +8,7 @@ const ProductoForm = ({ estanterias, onSubmit, onCancel }) => {
     precio_compra: '',
     precio_venta: '',
     cantidad_stock: 0,
-    estanteria_id: estanterias[0]?.id || ''
+    estanteria_id: defaultShelfId || estanterias[0]?.id || ''
   });
   const [file, setFile] = useState(null);
 
@@ -29,8 +29,8 @@ const ProductoForm = ({ estanterias, onSubmit, onCancel }) => {
     onSubmit({ ...formData, file });
   };
 
-  const inputClass = "w-full border-b border-gray-100 py-3 focus:border-black outline-none transition-colors text-sm font-light tracking-wide placeholder:text-gray-200";
-  const labelClass = "text-[9px] uppercase tracking-[0.2em] font-bold text-gray-400 block mb-1";
+  const inputClass = "w-full border-b border-grey-light/30 py-3 focus:border-pink-primary outline-none transition-colors text-sm font-light tracking-wide placeholder:text-grey-medium/50 bg-transparent text-text-primary";
+  const labelClass = "text-[9px] uppercase tracking-[0.2em] font-bold text-grey-medium block mb-1";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -139,14 +139,14 @@ const ProductoForm = ({ estanterias, onSubmit, onCancel }) => {
       <div className="flex flex-col gap-4 pt-4">
         <button
           type="submit"
-          className="w-full bg-black text-white text-[10px] uppercase tracking-[0.3em] font-bold py-5 hover:bg-gray-800 transition-all duration-500"
+          className="w-full bg-text-primary text-bg-primary text-[10px] uppercase tracking-[0.3em] font-bold py-5 hover:opacity-90 transition-all duration-500 shadow-xl"
         >
           Guardar Producto
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="w-full text-[9px] uppercase tracking-widest text-gray-400 hover:text-black transition-colors py-2"
+          className="w-full text-[9px] uppercase tracking-widest text-grey-medium hover:text-pink-primary transition-colors py-2"
         >
           Cancelar
         </button>
