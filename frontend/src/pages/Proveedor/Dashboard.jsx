@@ -55,6 +55,7 @@ const Dashboard = () => {
   const handleCrearEstanteria = async (e) => {
     e.preventDefault();
     if (!newShelfName.trim()) return;
+    setIsUploading(true);
     try {
       await api.post('/estanterias', {
         nombre: newShelfName,
@@ -69,6 +70,8 @@ const Dashboard = () => {
     } catch (error) {
       const msg = error.response?.data?.detail || error.response?.data?.message || "Error al crear estantería";
       alert(msg);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -168,7 +171,7 @@ const Dashboard = () => {
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-bg-primary/90 backdrop-blur-sm animate-fade-in">
           <div className="w-12 h-12 border-4 border-pink-primary border-t-transparent rounded-full animate-spin mb-4"></div>
           <div className="text-[10px] uppercase tracking-[0.4em] font-bold text-pink-primary animate-pulse">
-            Subiendo Producto...
+            Procesando...
           </div>
         </div>
       )}

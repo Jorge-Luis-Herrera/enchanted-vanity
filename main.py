@@ -284,11 +284,16 @@ def eliminar_estanteria(estanteria_id: int):
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # 1. Eliminar primero los productos de esa estantería (Cascade manual)
+            cursor.execute("DELETE FROM productos WHERE estanteria_id = %s", (estanteria_id,))
+            
+            # 2. Eliminar la estantería
             sql = "DELETE FROM estanterias WHERE id = %s"
             cursor.execute(sql, (estanteria_id,))
             connection.commit()
+            
             if cursor.rowcount == 0:
                 return {"error": "Estantería no encontrada"}
-            return {"mensaje": "Estantería eliminada correctamente"}
+            return {"mensaje": "Estantería y sus productos eliminados correctamente"}
     finally:
         connection.close()
