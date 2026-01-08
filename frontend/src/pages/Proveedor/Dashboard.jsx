@@ -29,6 +29,7 @@ const Dashboard = () => {
   const [newShelfName, setNewShelfName] = useState("");
   const [newShelfDesc, setNewShelfDesc] = useState("");
   const [newShelfImg, setNewShelfImg] = useState("");
+  const [shelfFile, setShelfFile] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -56,15 +57,20 @@ const Dashboard = () => {
     e.preventDefault();
     if (!newShelfName.trim()) return;
     setIsUploading(true);
+    const fd = new FormData();
+    fd.append('nombre', newShelfName);
+    fd.append('descripcion', newShelfDesc);
+    fd.append('imagen_url', newShelfImg);
+    if (shelfFile) fd.append('file', shelfFile);
+
     try {
-      await api.post('/estanterias', {
-        nombre: newShelfName,
-        descripcion: newShelfDesc,
-        imagen_url: newShelfImg
+      await api.post('/estanterias', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       setNewShelfName("");
       setNewShelfDesc("");
       setNewShelfImg("");
+      setShelfFile(null);
       setIsShelfModalOpen(false);
       fetchData();
     } catch (error) {
@@ -380,14 +386,25 @@ const Dashboard = () => {
               className="w-full border-b border-grey-light/30 py-2 focus:outline-none focus:border-pink-primary transition-colors bg-transparent placeholder-grey-light/50 mb-4 text-text-primary"
               placeholder="Ej. Productos para el verano..."
             />
-            <label className="block text-xs uppercase tracking-widest text-grey-medium mb-2 font-bold">URL Imagen (Opcional)</label>
-            <input
-              type="text"
-              value={newShelfImg}
-              onChange={(e) => setNewShelfImg(e.target.value)}
-              className="w-full border-b border-grey-light/30 py-2 focus:outline-none focus:border-pink-primary transition-colors bg-transparent placeholder-grey-light/50 text-text-primary"
-              placeholder="https://..."
-            />
+            <div>
+              <label className="text-[10px] uppercase tracking-widest font-bold text-grey-medium mb-1 block">URL Imagen (Opcional)</label>
+              <input
+                type="text"
+                value={newShelfImg}
+                onChange={(e) => setNewShelfImg(e.target.value)}
+                className="w-full border-b border-grey-light/30 py-3 focus:border-pink-primary outline-none transition-colors text-sm font-light bg-transparent text-text-primary"
+                placeholder="https://..."
+              />
+            </div>
+            <div>
+              <label className="text-[10px] uppercase tracking-widest font-bold text-grey-medium mb-1 block">O subir archivo local</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setShelfFile(e.target.files?.[0] || null)}
+                className="w-full border-b border-grey-light/30 py-3 focus:border-pink-primary outline-none transition-colors text-sm font-light bg-transparent text-text-primary cursor-pointer"
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-4 pt-4">
             <button

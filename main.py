@@ -268,12 +268,27 @@ def obtener_estanterias():
         connection.close()
 
 @app.post("/estanterias")
-def crear_estanteria(estanteria: EstanteriaBase):
+async def crear_estanteria(
+    nombre: str = Form(...),
+    descripcion: Optional[str] = Form(None),
+    imagen_url: Optional[str] = Form(None),
+    file: Optional[UploadFile] = File(None)
+):
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            # Manejo de imagen (Archivo vs URL)
+            final_imagen = imagen_url
+            if file is not None and file.filename:
+                clean_name = re.sub(r'[^a-zA-Z0-9.-]', '_', file.filename)
+                safe_name = f"shelf_{int(time.time())}_{clean_name}"
+                dest_path = uploads_dir / safe_name
+                with dest_path.open("wb") as f:
+                    f.write(await file.read())
+                final_imagen = f"/uploads/{safe_name}"
+
             sql = "INSERT INTO estanterias (nombre, descripcion, imagen_url) VALUES (%s, %s, %s)"
-            cursor.execute(sql, (estanteria.nombre, estanteria.descripcion, estanteria.imagen_url))
+            cursor.execute(sql, (nombre, descripcion, final_imagen))
             connection.commit()
             return {"mensaje": "Estantería creada", "id": cursor.lastrowid}
     finally:
