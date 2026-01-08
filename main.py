@@ -86,6 +86,7 @@ def health_check():
 
 @app.post("/login")
 def login(request: LoginRequest):
+    """Login endpoint for admin authentication"""
     if request.username == ADMIN_USER and request.password == ADMIN_PASS:
         return {"mensaje": "Login exitoso", "usuario": ADMIN_USER}
     return {"error": "Credenciales incorrectas"}
