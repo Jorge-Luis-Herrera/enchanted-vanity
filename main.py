@@ -189,12 +189,6 @@ async def crear_producto(
     finally:
         connection.close()
 
-@app.post("/login")
-def login(request: LoginRequest):
-    if request.username == ADMIN_USER and request.password == ADMIN_PASS:
-        return {"mensaje": "Login exitoso", "usuario": ADMIN_USER}
-    return {"error": "Credenciales incorrectas"}
-
 @app.delete("/productos/{producto_id}")
 def eliminar_producto(producto_id: int):
     connection = get_db_connection()
