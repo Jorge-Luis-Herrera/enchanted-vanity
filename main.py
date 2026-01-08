@@ -60,11 +60,10 @@ app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
 # Public URL used to build absolute links for uploaded assets
 PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
 
-# CORS - allow frontend origins
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+# CORS - allow all origins (simplified for now)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://localhost:5173", "https://enchanted-vanity.netlify.app", "*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -84,6 +83,12 @@ def get_db_connection():
 def health_check():
     """Simple health check endpoint that doesn't require database"""
     return {"status": "ok", "message": "Enchanted Vanity API is running"}
+
+@app.post("/login")
+def login(request: LoginRequest):
+    if request.username == ADMIN_USER and request.password == ADMIN_PASS:
+        return {"mensaje": "Login exitoso", "usuario": ADMIN_USER}
+    return {"error": "Credenciales incorrectas"}
 
 @app.get("/inventario")
 def obtener_inventario():
