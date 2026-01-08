@@ -55,7 +55,8 @@ const Dashboard = () => {
       setIsShelfModalOpen(false);
       fetchData();
     } catch (error) {
-      alert("Error al crear estantería");
+      const msg = error.response?.data?.detail || error.response?.data?.message || "Error al crear estantería";
+      alert(msg);
     }
   };
 
@@ -67,7 +68,8 @@ const Dashboard = () => {
       fetchData();
       if (activeShelf?.id === id) setActiveShelf(null);
     } catch (error) {
-      alert("Error al eliminar estantería");
+      const msg = error.response?.data?.detail || "Error al eliminar estantería";
+      alert(msg);
     }
   };
 

@@ -1,12 +1,21 @@
 
+import os
 import pymysql
 
 def get_db_connection():
+    # Try Railway standard variables first, then fallback to custom DB_* or defaults
+    host = os.getenv('MYSQLHOST') or os.getenv('DB_HOST') or 'localhost'
+    user = os.getenv('MYSQLUSER') or os.getenv('DB_USER') or 'root'
+    password = os.getenv('MYSQLPASSWORD') or os.getenv('DB_PASSWORD') or 'Jorgito123@'
+    database = os.getenv('MYSQLDATABASE') or os.getenv('DB_NAME') or 'enchanted_vanity'
+    port = int(os.getenv('MYSQLPORT') or os.getenv('DB_PORT') or '3306')
+
     return pymysql.connect(
-        host='localhost',
-        user='root',
-        password='Jorgito123@',
-        database='enchanted_vanity',
+        host=host,
+        user=user,
+        password=password,
+        database=database,
+        port=port,
         cursorclass=pymysql.cursors.DictCursor
     )
 

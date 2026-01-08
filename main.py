@@ -3,9 +3,10 @@ import time
 from pathlib import Path
 
 import pymysql
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 
@@ -70,19 +71,55 @@ app.add_middleware(
 )
 
 def get_db_connection():
-    return pymysql.connect(
-        host=os.getenv('DB_HOST', 'localhost'),
-        user=os.getenv('DB_USER', 'root'),
-        password=os.getenv('DB_PASSWORD', 'Jorgito123@'),
-        database=os.getenv('DB_NAME', 'enchanted_vanity'),
-        port=int(os.getenv('DB_PORT', '3306')),
-        cursorclass=pymysql.cursors.DictCursor
+    # Try Railway standard variables first, then fallback to custom DB_* or defaults
+    host = os.getenv('MYSQLHOST') or os.getenv('DB_HOST') or 'localhost'
+    user = os.getenv('MYSQLUSER') or os.getenv('DB_USER') or 'root'
+    password = os.getenv('MYSQLPASSWORD') or os.getenv('DB_PASSWORD') or 'Jorgito123@'
+    database = os.getenv('MYSQLDATABASE') or os.getenv('DB_NAME') or 'enchanted_vanity'
+    port = int(os.getenv('MYSQLPORT') or os.getenv('DB_PORT') or '3306')
+
+    try:
+        return pymysql.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=database,
+            port=port,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        raise e
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch-all exception handler to return JSON even on crashes"""
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal Server Error",
+            "detail": str(exc),
+            "path": request.url.path
+        },
     )
 
 @app.get("/")
 def health_check():
-    """Simple health check endpoint that doesn't require database"""
-    return {"status": "ok", "message": "Enchanted Vanity API is running"}
+    """Health check endpoint that also checks database connectivity"""
+    db_ok = False
+    message = "Enchanted Vanity API is running"
+    try:
+        conn = get_db_connection()
+        conn.close()
+        db_ok = True
+    except Exception as e:
+        message = f"API is running but DB connection failed: {str(e)}"
+    
+    return {
+        "status": "ok" if db_ok else "warning",
+        "database": "connected" if db_ok else "disconnected",
+        "message": message
+    }
 
 @app.post("/login")
 def login(request: LoginRequest):
