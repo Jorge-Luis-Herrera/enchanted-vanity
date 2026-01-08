@@ -14,11 +14,20 @@ const MoonIcon = ({ className }) => (
 );
 
 const Landing = () => {
+  const backendBase = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
   const [estanteriasConProductos, setEstanteriasConProductos] = useState({});
   const [cargando, setCargando] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const resolveImage = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (url.startsWith('/')) return `${backendBase}${url}`;
+    return `${backendBase}/${url}`;
+  };
 
   // Toggle Dark Mode
   useEffect(() => {
@@ -143,7 +152,7 @@ const Landing = () => {
                   <div key={prod.id} onClick={() => setSelectedProduct(prod)} className="group cursor-pointer active:scale-95 transition-transform duration-200">
                     <div className="relative aspect-[3/4] bg-grey-light/5 overflow-hidden mb-4 rounded-sm">
                       {prod.imagen_url ? (
-                        <img src={prod.imagen_url} alt={prod.nombre} className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" />
+                        <img src={resolveImage(prod.imagen_url)} alt={prod.nombre} className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl grayscale opacity-20 group-hover:scale-110 transition-transform duration-700">✨</div>
                       )}
@@ -184,7 +193,7 @@ const Landing = () => {
           <div className="space-y-8 animate-fade-in">
             <div className="aspect-square bg-grey-light/10 overflow-hidden relative">
               {selectedProduct.imagen_url ? (
-                <img src={selectedProduct.imagen_url} alt={selectedProduct.nombre} className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700" />
+                <img src={resolveImage(selectedProduct.imagen_url)} alt={selectedProduct.nombre} className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-700" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-5xl grayscale opacity-20">✨</div>
               )}
