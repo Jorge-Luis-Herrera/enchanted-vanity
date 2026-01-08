@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pymysql
 from fastapi import FastAPI, File, Form, UploadFile, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -90,6 +91,18 @@ def get_db_connection():
     except Exception as e:
         print(f"Error connecting to database: {e}")
         raise e
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Ensure validation errors (422) also return CORS headers and clear JSON"""
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": "Validation Error",
+            "detail": exc.errors(),
+            "message": "Los datos enviados no son válidos. Asegúrate de completar todos los campos obligatorios."
+        },
+    )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

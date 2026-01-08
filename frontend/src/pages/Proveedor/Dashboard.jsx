@@ -90,24 +90,26 @@ const Dashboard = () => {
         ? { ...nuevoProducto, estanteria_id: activeShelf.id }
         : nuevoProducto;
 
-      const hasFile = productData.file instanceof File;
+      const fd = new FormData();
+      Object.entries(productData).forEach(([k, v]) => {
+        if (v !== undefined && v !== null) {
+          if (k === 'file' && v instanceof File) {
+            fd.append('file', v);
+          } else if (k !== 'file') {
+            fd.append(k, v);
+          }
+        }
+      });
 
-      if (hasFile) {
-        const fd = new FormData();
-        Object.entries(productData).forEach(([k, v]) => {
-          if (v !== undefined && v !== null) fd.append(k, v);
-        });
-        await api.post('/productos', fd, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-      } else {
-        await api.post('/productos', productData);
-      }
+      await api.post('/productos', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
       setIsProductModalOpen(false);
       fetchData();
     } catch (error) {
-      alert(error.response?.data?.detail || "Error al crear producto");
+      const msg = error.response?.data?.message || error.response?.data?.detail || "Error al crear producto";
+      alert(msg);
     }
   };
 

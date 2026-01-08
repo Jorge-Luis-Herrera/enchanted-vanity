@@ -10,7 +10,7 @@
   --color-dark: #050505;
   --color-bg-primary: #FCFAFA;
   --color-text-primary: #1A1A1A;
-  
+
   /* Semantic Colors */
   --color-accent: var(--color-pink-primary);
   --color-accent-hover: #D882A5;
@@ -20,8 +20,10 @@
   /* Pinkie Palette - Dark Mode Adaptation */
   --color-bg-primary: #0A0A0A;
   --color-text-primary: #F0F0F0;
-  --color-grey-light: #2A2A2A; /* Darker grey for backgrounds in dark mode */
-  --color-grey-medium: #B0B0B0; /* Lighter grey for text in dark mode */
+  --color-grey-light: #2A2A2A;
+  /* Darker grey for backgrounds in dark mode */
+  --color-grey-medium: #B0B0B0;
+  /* Lighter grey for text in dark mode */
 }
 
 @theme {
@@ -33,30 +35,55 @@
   --color-dark: var(--color-dark);
   --color-bg-primary: var(--color-bg-primary);
   --color-text-primary: var(--color-text-primary);
-  
+
   --font-display: "Playfair Display", serif;
   --font-body: "Inter", sans-serif;
-  
+
   --animate-fade-in: fadeIn 0.8s ease-out forwards;
   --animate-slide-up: slideUp 0.8s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 html {
   scroll-behavior: smooth;
+  color: var(--color-text-primary);
 }
 
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Fix for Select/Options in Dark Mode */
+select,
+option {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+::placeholder {
+  color: var(--color-grey-medium);
+  opacity: 0.5;
 }
