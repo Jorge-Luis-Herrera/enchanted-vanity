@@ -80,6 +80,11 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor
     )
 
+@app.get("/")
+def health_check():
+    """Simple health check endpoint that doesn't require database"""
+    return {"status": "ok", "message": "Enchanted Vanity API is running"}
+
 @app.get("/inventario")
 def obtener_inventario():
     connection = get_db_connection()
