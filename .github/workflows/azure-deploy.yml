@@ -52,6 +52,6 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'NOMBRE_DE_TU_APP_EN_AZURE' # Cambia esto por el nombre real en Azure
+          app-name: 'Enchanted-Vanity' # Nombre de tu App en Azure
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./backend
