@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import "./header.css";
 
 const Header = () => {
@@ -24,7 +25,7 @@ const Header = () => {
                 </ul>
             </nav>
             <div className="actions">
-                <button className="contact-btn">Misterios</button>
+                <Link to="/login" className="contact-btn">Admin</Link>
             </div>
         </header>  
     );
