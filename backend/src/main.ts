@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -15,6 +16,19 @@ async function bootstrap() {
   const uploadsPath = process.env.NODE_ENV === 'production' 
     ? '/home/data/uploads' 
     : join(__dirname, '..', 'uploads');
+  
+  // Asegurar que la carpeta existe para que no falle el servidor
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+  }
+
+  // Asegurar que la carpeta de la DB existe en Azure
+  if (process.env.NODE_ENV === 'production') {
+    const dbPath = '/home/data';
+    if (!fs.existsSync(dbPath)) {
+      fs.mkdirSync(dbPath, { recursive: true });
+    }
+  }
     
   app.useStaticAssets(uploadsPath, {
     prefix: '/uploads/',
