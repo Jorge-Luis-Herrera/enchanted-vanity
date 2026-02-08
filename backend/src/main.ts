@@ -30,8 +30,6 @@ async function bootstrap() {
   app.useStaticAssets(uploadsPath, {
     prefix: '/uploads/',
   });
-    prefix: '/uploads/',
-  });
 
   // Azure usa process.env.PORT
   const port = process.env.PORT || 3000;
