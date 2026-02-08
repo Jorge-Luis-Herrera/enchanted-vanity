@@ -5,32 +5,31 @@ import { join } from 'path';
 import * as fs from 'fs';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
-  
-  // Prefijo global para que no choque con el frontend
-  app.setGlobalPrefix('api');
-
-  // Servir archivos estáticos desde la carpeta 'uploads'
-  // En Azure usamos /home/data/uploads para persistencia
+  // Asegurar que las carpetas existen ANTES de arrancar NestJS
   const uploadsPath = process.env.NODE_ENV === 'production' 
     ? '/home/data/uploads' 
     : join(__dirname, '..', 'uploads');
   
-  // Asegurar que la carpeta existe para que no falle el servidor
   if (!fs.existsSync(uploadsPath)) {
     fs.mkdirSync(uploadsPath, { recursive: true });
   }
 
-  // Asegurar que la carpeta de la DB existe en Azure
   if (process.env.NODE_ENV === 'production') {
     const dbPath = '/home/data';
     if (!fs.existsSync(dbPath)) {
       fs.mkdirSync(dbPath, { recursive: true });
     }
   }
-    
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.enableCors();
+  
+  // Prefijo global para que no choque con el frontend
+  app.setGlobalPrefix('api');
+
   app.useStaticAssets(uploadsPath, {
+    prefix: '/uploads/',
+  });
     prefix: '/uploads/',
   });
 
