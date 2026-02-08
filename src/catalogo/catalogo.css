@@ -1,0 +1,293 @@
+.shelf-container {
+    padding:2rem 5%;
+    margin-bottom:2rem;
+}
+
+.shelf-title {
+    font-size: 1.8rem;
+    color: var(--accent-gold);/*Variable declarada en el css root index.css*/
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--accent-gold);
+    padding-left: 15px;
+}
+
+.shelf-row {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto; /*Habilita el scroll horizontal */
+    padding: 20px 0;
+    scroll-behavior: smooth; /*Suaviza el desplazamiento al hacer scroll*/
+    -webkit-overflow-scrolling: touch; /*Mejora el rendimiento del scroll en dispositivos táctiles*/
+}
+
+.product-card {
+    min-width: 260px;
+    height: 350px;
+    position: relative;
+    overflow: hidden;
+    padding: 0; /* Quitamos padding para que el overlay ocupe todo */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border-radius: 15px;
+}
+
+.card-glass-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.2) 100%);
+    backdrop-filter: blur(4px);
+    width: 100%;
+    padding: 20px;
+    border-top: 1px solid var(--glass-border);
+    transition: 0.3s;
+}
+
+.product-card:hover .card-glass-overlay {
+    backdrop-filter: blur(0px); /* Al hacer hover se ve nítido */
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 40%, rgba(0,0,0,0.1) 100%);
+}
+
+/* Modal 3D Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+    padding: 20px;
+}
+
+.modal-content-3d {
+    background: #111;
+    width: 95%; /* Cambiamos a 95% para dar margen en móviles */
+    max-width: 800px;
+    max-height: 90vh; /* Asegura que no se salga de la pantalla verticalmente */
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    overflow-y: auto; /* Scroll interno si el contenido es mucho */
+    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.8) translateZ(-100px); opacity: 0; }
+    to { transform: scale(1) translateZ(0); opacity: 1; }
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: row; /* Desktop por defecto */
+}
+
+.image-container-3d {
+    flex: 1;
+    min-width: 0; /* Eliminamos el min-width forzado */
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    perspective: 1000px;
+    cursor: zoom-in;
+    position: relative;
+}
+
+.click-hint {
+    font-size: 0.6rem;
+    color: var(--accent-gold);
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.main-image-3d {
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 10px 10px 30px rgba(0,0,0,0.8);
+    transform: rotateY(-5deg) rotateX(5deg);
+    transition: 0.5s;
+    object-fit: contain;
+}
+
+.main-image-3d:hover {
+    transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+}
+
+.details-section {
+    flex: 1.2;
+    min-width: 0; /* Eliminamos el min-width forzado */
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.details-section h2 {
+    color: var(--accent-gold);
+    font-size: clamp(1.5rem, 5vw, 2.2rem); /* Tipografía fluida */
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.stat {
+    background: rgba(255,255,255,0.05);
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.stat span {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: white;
+}
+
+.description {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 10px;
+}
+
+.action-btn {
+    margin-top: auto;
+    background: var(--accent-gold);
+    color: black;
+    border: none;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.action-btn:hover {
+    background: white;
+    transform: translateY(-2px);
+}
+
+/* Estilos para Imagen Expandida */
+.fullscreen-image-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.expanded-image {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+}
+
+.close-expanded {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    font-size: 2.5rem;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3010;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: rgba(0,0,0,0.3);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 100;
+}
+
+/* Adaptación para Tablets y Móviles */
+@media (max-width: 768px) {
+    .modal-body {
+        flex-direction: column;
+    }
+    
+    .image-container-3d {
+        padding: 30px 10px;
+    }
+
+    .main-image-3d {
+        max-height: 35vh;
+        transform: rotate(0); /* Quitamos 3D en móvil para ganar espacio */
+    }
+
+    .details-section {
+        padding: 25px 20px;
+    }
+}
+
+/* Teléfonos muy pequeños (iPhone SE, etc) */
+@media (max-width: 400px) {
+    .stats-grid {
+        grid-template-columns: 1fr; /* Una sola columna para stats */
+    }
+    
+    .details-section h2 {
+        font-size: 1.3rem;
+    }
+
+    .stat span {
+        font-size: 1rem;
+    }
+
+    .description {
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+}
