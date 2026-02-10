@@ -3,7 +3,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: var(--bg-gradient); /* Usamos el fondo global del paso 1 */
+    background: var(--bg-gradient);
+    /* Usamos el fondo global del paso 1 */
 }
 
 .login-card {
@@ -18,7 +19,7 @@
 }
 
 .login-card h2 {
-    color: var(--accent-gold);
+    color: var(--accent-pink-dark);
     margin-bottom: 0.5rem;
 }
 
@@ -35,7 +36,7 @@
 
 .input-group label {
     display: block;
-    color: var(--text-light);
+    color: var(--text-dark);
     margin-bottom: 0.5rem;
     font-size: 0.8rem;
     font-weight: 600;
@@ -43,24 +44,23 @@
 
 .input-group input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.05);
+    background: #fff;
     border: 1px solid var(--glass-border);
     padding: 12px;
     border-radius: 8px;
-    color: white;
+    color: var(--text-dark);
     outline: none;
     transition: 0.3s;
 }
 
 .input-group input:focus {
-    border-color: var(--accent-gold);
-    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-pink-dark);
 }
 
 .login-btn {
     width: 100%;
-    background: var(--accent-gold);
-    color: black;
+    background: var(--bg-dark);
+    color: white;
     border: none;
     padding: 12px;
     border-radius: 8px;

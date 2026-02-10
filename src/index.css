@@ -1,48 +1,110 @@
 /* Archivo global de estilos */
 
 :root {
-    /* Paleta de proyecto */
-    --bg-dark: #0f172a; /* Fondo oscuro profundo */
-    --bg-gradient: radial-gradient(circle at top,#1e1b4b 0%, #0f172a 100%);
-    --accent-gold: #fbbf24; /* Dorado vibrante */
-    --text-light: #f8fafc;
-    --text-muted: #94a3b8; /* Gris claro para texto secundario */
+    /* Professional Palette: Pink Pastel, White, Black */
+    --bg-main: #ffffff;
+    --bg-dark: #1a1a1a;
+    --accent-pink: #f8bbd0;
+    /* Soft Pink */
+    --accent-pink-dark: #f48fb1;
+    --text-dark: #1a1a1a;
+    --text-light: #ffffff;
+    --text-muted: #757575;
 
-    /* Grassmorphism */
-    --glass-bg: rgba(255,255,255,0.03);
-    --glass-border: rgba(255,255,255,0.1);
-    --glass-blur: blur(12px);
+    /* Glassmorphism Refined */
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-blur: blur(10px);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', sans-serif; /* Fuente moderna y legible */
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* El fondo */
+/* Base Styles - Mobile First */
 body {
-    background: var(--bg-gradient); /*evita que el fondo se mueva al scrollear*/
-    color: var(--text-light);
+    background: var(--bg-main);
+    color: var(--text-dark);
     min-height: 100vh;
-    overflow-x: hidden; /* Evita que la page vibre de lado a lado*/
+    font-size: 14px;
+    /* Smaller base font for mobile */
+    overflow-x: hidden;
+    line-height: 1.5;
 }
-/* Estilo para todas las barras de scroll */
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+p {
+    font-size: 0.9rem;
+}
+
+/* Desktop scaling */
+@media (min-width: 768px) {
+    body {
+        font-size: 16px;
+    }
+
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+}
+
+/* Scrollbar styles */
 ::-webkit-scrollbar {
     width: 8px;
-    height: 6px; /* Altura de la barra horizontal*/
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb {
     background: var(--glass-border);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-gold);/* Se ilumina en dorado al tocarla*/
+    background: var(--accent-pink-dark);
+}
+
+.main-content {
+    min-height: 80vh;
+    padding: 85px 15px 30px 15px;
+    /* Compact padding for mobile */
+}
+
+@media (min-width: 768px) {
+    .main-content {
+        padding: 120px 5% 50px 5%;
+    }
 }

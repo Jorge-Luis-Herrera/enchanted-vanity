@@ -1,14 +1,14 @@
 .admin-container {
     display: flex;
     min-height: 100vh;
-    background: var(--bg-dark);
-    color: white;
+    background: #f4f4f4;
+    /* Light grey background for the whole panel */
+    color: var(--text-dark);
 }
 
 .admin-sidebar {
     width: 280px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
+    background: #fff;
     border-right: 1px solid var(--glass-border);
     display: flex;
     flex-direction: column;
@@ -16,6 +16,7 @@
     position: sticky;
     top: 0;
     height: 100vh;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
 }
 
 .sidebar-header {
@@ -23,8 +24,13 @@
 }
 
 .sidebar-header h2 {
-    color: var(--accent-gold);
+    color: var(--text-dark);
     font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.sidebar-header h2 span {
+    color: var(--accent-pink-dark);
 }
 
 .sidebar-header p {
@@ -35,30 +41,33 @@
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     flex-grow: 1;
 }
 
 .nav-item {
-    color: var(--text-light);
+    color: var(--text-dark);
     text-decoration: none;
     padding: 12px 15px;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: 0.3s;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-.nav-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--accent-gold);
+.nav-item:hover,
+.nav-item.active {
+    background: var(--accent-pink);
+    color: var(--text-dark);
 }
 
 .return-shop {
     margin-top: 30px;
     border-top: 1px solid var(--glass-border);
     padding-top: 25px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .logout-btn {
@@ -66,10 +75,10 @@
     border: 1px solid #ef4444;
     color: #ef4444;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     transition: 0.3s;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .logout-btn:hover {
@@ -79,11 +88,17 @@
 
 .admin-content {
     flex-grow: 1;
-    padding: 50px;
+    padding: 15px;
+    /* Reduced from 40px */
     overflow-y: auto;
 }
 
-/* Responsividad para móviles y tablets */
+@media (min-width: 769px) {
+    .admin-content {
+        padding: 40px;
+    }
+}
+
 @media (max-width: 768px) {
     .admin-container {
         flex-direction: column;
@@ -93,14 +108,14 @@
         width: 100%;
         height: auto;
         position: relative;
-        padding: 20px;
+        padding: 15px;
+        /* Reduced from 20px */
         border-right: none;
         border-bottom: 1px solid var(--glass-border);
     }
 
     .sidebar-header {
         margin-bottom: 20px;
-        text-align: center;
     }
 
     .sidebar-nav {
@@ -110,18 +125,8 @@
         gap: 10px;
     }
 
-    .nav-item {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-
-    .return-shop {
-        margin-top: 20px;
-        padding-top: 15px;
-        text-align: center;
-    }
-
     .admin-content {
-        padding: 20px;
+        padding: 10px;
+        /* Even smaller for extreme narrow screens */
     }
 }

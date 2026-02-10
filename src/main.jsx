@@ -9,11 +9,13 @@ import AdminLayout from "./admin/AdminLayout";
 import AdminShelves from "./admin/AdminShelves";
 import AdminProducts from "./admin/AdminProducts"; // Importamos Gestión Productos
 import { API_URL } from "./apiConfig";
+import { kmpSearch } from "./utils/kmp";
 import "./index.css";
 
 const Tienda = () => {
     const [inventario, setInventario] = useState([]);
     const [cargando, setCargando] = useState(true);
+    const [busqueda, setBusqueda] = useState("");
 
     useEffect(() => {
         fetch(`${API_URL}/inventory`)
@@ -28,19 +30,24 @@ const Tienda = () => {
             });
     }, []);
 
+    const inventarioFiltrado = inventario.map(shelf => ({
+        ...shelf,
+        productos: shelf.productos?.filter(p => kmpSearch(p.nombre, busqueda)) || []
+    })).filter(shelf => shelf.productos.length > 0);
+
     return (
         <div className="app-container">
-            <Header />
-            <main style={{ minHeight: "80vh", padding: "120px 0 20px 0" }}>
+            <Header onSearch={setBusqueda} />
+            <main className="main-content">
                 {cargando ? (
-                    <p style={{ textAlign: "center", color: "var(--accent-gold)" }}>Cargando catálogo de productos...</p>
+                    <p style={{ textAlign: "center", color: "var(--accent-pink)" }}>Cargando catálogo de productos...</p>
                 ) : (
-                    inventario.length > 0 ? (
-                        inventario.map(s => (
+                    inventarioFiltrado.length > 0 ? (
+                        inventarioFiltrado.map(s => (
                             <ShelfRow key={s.id} title={s.titulo} productos={s.productos} />
                         ))
                     ) : (
-                        <p style={{ textAlign: "center", color: "var(--text-muted)" }}>No hay secciones disponibles en este momento.</p>
+                        <p style={{ textAlign: "center", color: "var(--text-muted)" }}>{busqueda ? "No se encontraron productos coincidentes." : "No hay secciones disponibles en este momento."}</p>
                     )
                 )}
             </main>

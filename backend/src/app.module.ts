@@ -9,7 +9,10 @@ import { InventoryModule } from './inventory/inventory.module';
     // Servir el frontend compilado
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client'),
-      exclude: ['/api/(.*)'], // No interferir con la API
+      exclude: ['/api/(.*)'],
+      serveStaticOptions: {
+        cacheControl: true,
+      },
     }),
     // Configuración de la base de datos
     TypeOrmModule.forRoot({

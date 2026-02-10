@@ -1,293 +1,280 @@
 .shelf-container {
-    padding:2rem 5%;
-    margin-bottom:2rem;
+    padding: 1.5rem 15px;
+    margin-bottom: 1rem;
 }
 
 .shelf-title {
-    font-size: 1.8rem;
-    color: var(--accent-gold);/*Variable declarada en el css root index.css*/
-    margin-bottom: 1.5rem;
-    border-left: 4px solid var(--accent-gold);
-    padding-left: 15px;
+    font-size: 1.1rem;
+    /* Smaller for mobile */
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    border-left: 3px solid var(--accent-pink-dark);
+    padding-left: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .shelf-row {
     display: flex;
-    gap: 20px;
-    overflow-x: auto; /*Habilita el scroll horizontal */
-    padding: 20px 0;
-    scroll-behavior: smooth; /*Suaviza el desplazamiento al hacer scroll*/
-    -webkit-overflow-scrolling: touch; /*Mejora el rendimiento del scroll en dispositivos táctiles*/
+    gap: 12px;
+    /* Tighter gap */
+    overflow-x: auto;
+    padding: 10px 0;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
+/* Compact Product Card - Mobile First */
 .product-card {
-    min-width: 260px;
-    height: 350px;
+    min-width: 140px;
+    /* Much smaller for 2-item visibility potential */
+    height: 200px;
     position: relative;
     overflow: hidden;
-    padding: 0; /* Quitamos padding para que el overlay ocupe todo */
+    padding: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    border-radius: 15px;
+    border-radius: 12px;
+    background-color: #eee;
 }
 
 .card-glass-overlay {
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 20%, rgba(0,0,0,0.2) 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 30%, rgba(0, 0, 0, 0) 100%);
     backdrop-filter: blur(4px);
     width: 100%;
-    padding: 20px;
-    border-top: 1px solid var(--glass-border);
+    padding: 10px;
     transition: 0.3s;
+    color: #fff;
 }
 
-.product-card:hover .card-glass-overlay {
-    backdrop-filter: blur(0px); /* Al hacer hover se ve nítido */
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 40%, rgba(0,0,0,0.1) 100%);
+.product-info h3 {
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Modal 3D Styles */
+.product-info p {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+}
+
+.product-info .price {
+    font-weight: 700;
+    color: var(--accent-pink);
+}
+
+/* Modal Refined for Mobile */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
-    backdrop-filter: blur(10px);
-    padding: 20px;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+    padding: 15px;
 }
 
 .modal-content-3d {
-    background: #111;
-    width: 95%; /* Cambiamos a 95% para dar margen en móviles */
-    max-width: 800px;
-    max-height: 90vh; /* Asegura que no se salga de la pantalla verticalmente */
+    background: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    /* Phone oriented max width */
+    max-height: 90vh;
     border-radius: 20px;
     border: 1px solid var(--glass-border);
     position: relative;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
-    overflow-y: auto; /* Scroll interno si el contenido es mucho */
-    animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform-style: preserve-3d;
-    perspective: 1000px;
-}
-
-@keyframes modalPop {
-    from { transform: scale(0.8) translateZ(-100px); opacity: 0; }
-    to { transform: scale(1) translateZ(0); opacity: 1; }
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+    color: var(--text-dark);
 }
 
 .modal-body {
     display: flex;
-    flex-direction: row; /* Desktop por defecto */
+    flex-direction: column;
+    /* Mobile first */
 }
 
 .image-container-3d {
-    flex: 1;
-    min-width: 0; /* Eliminamos el min-width forzado */
-    background: #000;
+    background: #fdfdfd;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    perspective: 1000px;
-    cursor: zoom-in;
+    padding: 15px;
     position: relative;
-}
-
-.click-hint {
-    font-size: 0.6rem;
-    color: var(--accent-gold);
-    margin-top: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.7;
 }
 
 .main-image-3d {
     max-width: 100%;
-    max-height: 400px;
-    height: auto;
+    max-height: 250px;
     border-radius: 10px;
-    box-shadow: 10px 10px 30px rgba(0,0,0,0.8);
-    transform: rotateY(-5deg) rotateX(5deg);
-    transition: 0.5s;
     object-fit: contain;
-}
-
-.main-image-3d:hover {
-    transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+    transition: 0.3s;
 }
 
 .details-section {
-    flex: 1.2;
-    min-width: 0; /* Eliminamos el min-width forzado */
-    padding: 40px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 .details-section h2 {
-    color: var(--accent-gold);
-    font-size: clamp(1.5rem, 5vw, 2.2rem); /* Tipografía fluida */
+    color: var(--text-dark);
+    font-size: 1.25rem;
 }
 
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 10px;
 }
 
 .stat {
-    background: rgba(255,255,255,0.05);
-    padding: 12px;
-    border-radius: 10px;
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
     text-align: center;
+    border: 1px solid var(--glass-border);
 }
 
 .stat label {
     display: block;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }
 
 .stat span {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: bold;
-    color: white;
+    color: var(--text-dark);
 }
 
 .description {
     color: var(--text-muted);
-    line-height: 1.6;
-    margin-top: 10px;
+    font-size: 0.8rem;
+    line-height: 1.4;
 }
 
 .action-btn {
-    margin-top: auto;
-    background: var(--accent-gold);
-    color: black;
+    background: var(--bg-dark);
+    color: var(--text-light);
     border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 1rem;
+    padding: 12px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: 0.3s;
 }
 
-.action-btn:hover {
-    background: white;
-    transform: translateY(-2px);
+.action-btn:active {
+    background: var(--accent-pink-dark);
+    transform: scale(0.98);
 }
 
-/* Estilos para Imagen Expandida */
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.1);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+}
+
+/* Fullscreen Image View */
 .fullscreen-image-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    z-index: 3000;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10002;
+    /* Above modal and header */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: zoom-out;
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 .expanded-image {
-    max-width: 95vw;
-    max-height: 95vh;
+    max-width: 90%;
+    max-height: 90%;
     object-fit: contain;
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .close-expanded {
     position: absolute;
     top: 20px;
     right: 20px;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    font-size: 2.5rem;
-    width: 50px;
-    height: 50px;
+    font-size: 2rem;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 3010;
 }
 
-.close-modal {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    background: rgba(0,0,0,0.3);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    z-index: 100;
-}
-
-/* Adaptación para Tablets y Móviles */
-@media (max-width: 768px) {
-    .modal-body {
-        flex-direction: column;
+/* Desktop Scaling */
+@media (min-width: 768px) {
+    .shelf-container {
+        padding: 2rem 5%;
     }
-    
+
+    .shelf-title {
+        font-size: 1.65rem;
+    }
+
+    .product-card {
+        min-width: 220px;
+        height: 300px;
+    }
+
+    .modal-content-3d {
+        max-width: 800px;
+    }
+
+    .modal-body {
+        flex-direction: row;
+    }
+
     .image-container-3d {
-        padding: 30px 10px;
+        flex: 1;
+        padding: 30px;
     }
 
     .main-image-3d {
-        max-height: 35vh;
-        transform: rotate(0); /* Quitamos 3D en móvil para ganar espacio */
+        max-height: 400px;
     }
 
     .details-section {
-        padding: 25px 20px;
-    }
-}
-
-/* Teléfonos muy pequeños (iPhone SE, etc) */
-@media (max-width: 400px) {
-    .stats-grid {
-        grid-template-columns: 1fr; /* Una sola columna para stats */
-    }
-    
-    .details-section h2 {
-        font-size: 1.3rem;
-    }
-
-    .stat span {
-        font-size: 1rem;
-    }
-
-    .description {
-        font-size: 0.85rem;
-        line-height: 1.4;
+        flex: 1;
+        padding: 40px;
     }
 }
