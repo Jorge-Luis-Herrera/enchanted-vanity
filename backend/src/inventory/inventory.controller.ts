@@ -16,7 +16,7 @@ const multerConfig = {
     destination: (req, file, cb) => {
       const dest = process.env.NODE_ENV === 'production'
         ? '/home/data/uploads'
-        : './uploads';
+        : join(__dirname, '..', '..', 'uploads');
       cb(null, dest);
     },
     filename: (req, file, cb) => {
@@ -53,6 +53,17 @@ export class InventoryController {
     }
 
     return result;
+  }
+
+  @Get('health')
+  async health() {
+    return {
+      status: 'ok',
+      env: process.env.NODE_ENV,
+      db_sync: process.env.DB_SYNC,
+      cwd: process.cwd(),
+      time: new Date().toISOString()
+    };
   }
 
   // ─── Estanterías ───

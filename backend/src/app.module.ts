@@ -4,6 +4,9 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { InventoryModule } from './inventory/inventory.module';
 import { AuthModule } from './auth/auth.module';
+import { Product } from './inventory/entities/product.entity';
+import { Category } from './inventory/entities/category.entity';
+import { Shelf } from './inventory/entities/shelf.entity';
 
 const backendRoot = join(__dirname, '..');
 const devDbPath = join(backendRoot, 'data', 'db.sqlite');
@@ -27,8 +30,8 @@ const devDbPath = join(backendRoot, 'data', 'db.sqlite');
       database: process.env.NODE_ENV === 'production' 
         ? '/home/data/db.sqlite' 
         : devDbPath,
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production', // Desactivar en producción para evitar pérdida de datos
+      entities: [Product, Category, Shelf],
+      synchronize: process.env.NODE_ENV !== 'production' || process.env.DB_SYNC === 'true', // Permitir forzar sync en prod
     }),
     AuthModule,
     InventoryModule,
