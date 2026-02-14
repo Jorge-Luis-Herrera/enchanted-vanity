@@ -37,8 +37,10 @@ export class InventoryController {
       status: 'ok',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'not set',
+      dbSync: process.env.DB_SYNC || 'not set',
       nodeVersion: process.version,
       port: process.env.PORT || '3000 (default)',
+      cwd: process.cwd(),
     };
 
     try {
@@ -53,17 +55,6 @@ export class InventoryController {
     }
 
     return result;
-  }
-
-  @Get('health')
-  async health() {
-    return {
-      status: 'ok',
-      env: process.env.NODE_ENV,
-      db_sync: process.env.DB_SYNC,
-      cwd: process.cwd(),
-      time: new Date().toISOString()
-    };
   }
 
   // ─── Estanterías ───

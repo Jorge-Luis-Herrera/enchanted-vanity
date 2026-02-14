@@ -31,7 +31,7 @@ const devDbPath = join(backendRoot, 'data', 'db.sqlite');
         ? '/home/data/db.sqlite' 
         : devDbPath,
       entities: [Product, Category, Shelf],
-      synchronize: process.env.NODE_ENV !== 'production' || process.env.DB_SYNC === 'true', // Permitir forzar sync en prod
+      synchronize: true, // TEMPORAL: forzar creación de tablas en Azure. Cambiar a false después del primer despliegue exitoso.
     }),
     AuthModule,
     InventoryModule,

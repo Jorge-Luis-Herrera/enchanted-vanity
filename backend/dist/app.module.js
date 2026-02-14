@@ -39,7 +39,7 @@ exports.AppModule = AppModule = __decorate([
                     ? '/home/data/db.sqlite'
                     : devDbPath,
                 entities: [product_entity_1.Product, category_entity_1.Category, shelf_entity_1.Shelf],
-                synchronize: process.env.NODE_ENV !== 'production' || process.env.DB_SYNC === 'true',
+                synchronize: true,
             }),
             auth_module_1.AuthModule,
             inventory_module_1.InventoryModule,
