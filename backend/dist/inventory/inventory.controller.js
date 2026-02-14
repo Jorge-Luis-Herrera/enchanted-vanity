@@ -40,6 +40,27 @@ let InventoryController = class InventoryController {
     constructor(inventoryService) {
         this.inventoryService = inventoryService;
     }
+    async healthCheck() {
+        const result = {
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV || 'not set',
+            nodeVersion: process.version,
+            port: process.env.PORT || '3000 (default)',
+        };
+        try {
+            const shelves = await this.inventoryService.getInventario();
+            result.database = 'connected';
+            result.shelfCount = shelves.length;
+        }
+        catch (err) {
+            result.status = 'error';
+            result.database = 'failed';
+            result.dbError = err.message;
+            result.dbErrorStack = err.stack?.split('\n').slice(0, 5);
+        }
+        return result;
+    }
     async findAll() {
         return this.inventoryService.getInventario();
     }
@@ -97,6 +118,12 @@ let InventoryController = class InventoryController {
     }
 };
 exports.InventoryController = InventoryController;
+__decorate([
+    (0, common_1.Get)('health'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "healthCheck", null);
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),

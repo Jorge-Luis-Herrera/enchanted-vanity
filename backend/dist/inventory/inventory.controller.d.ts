@@ -7,6 +7,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 export declare class InventoryController {
     private readonly inventoryService;
     constructor(inventoryService: InventoryService);
+    healthCheck(): Promise<any>;
     findAll(): Promise<Shelf[]>;
     createShelf(body: {
         titulo: string;

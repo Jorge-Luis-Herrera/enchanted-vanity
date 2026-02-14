@@ -14,8 +14,8 @@ import { UpdateProductDto } from './dto/update-product.dto';
 const multerConfig = {
   storage: diskStorage({
     destination: (req, file, cb) => {
-      const dest = process.env.NODE_ENV === 'production' 
-        ? '/home/data/uploads' 
+      const dest = process.env.NODE_ENV === 'production'
+        ? '/home/data/uploads'
         : './uploads';
       cb(null, dest);
     },
@@ -28,7 +28,32 @@ const multerConfig = {
 
 @Controller('inventory')
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(private readonly inventoryService: InventoryService) { }
+
+  // ─── Diagnóstico ───
+  @Get('health')
+  async healthCheck() {
+    const result: any = {
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'not set',
+      nodeVersion: process.version,
+      port: process.env.PORT || '3000 (default)',
+    };
+
+    try {
+      const shelves = await this.inventoryService.getInventario();
+      result.database = 'connected';
+      result.shelfCount = shelves.length;
+    } catch (err) {
+      result.status = 'error';
+      result.database = 'failed';
+      result.dbError = err.message;
+      result.dbErrorStack = err.stack?.split('\n').slice(0, 5);
+    }
+
+    return result;
+  }
 
   // ─── Estanterías ───
   @Get()
@@ -63,7 +88,7 @@ export class InventoryController {
   ): Promise<Category> {
     const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
     return this.inventoryService.createCategory(
-      body.nombre, 
+      body.nombre,
       parseInt(body.shelfId),
       imagenUrl
     );
@@ -113,15 +138,15 @@ export class InventoryController {
     @Body() body: CreateProductDto
   ): Promise<Product> {
     const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
-    
-    const categoryIds = typeof body.categoryIds === 'string' 
-      ? JSON.parse(body.categoryIds) 
+
+    const categoryIds = typeof body.categoryIds === 'string'
+      ? JSON.parse(body.categoryIds)
       : (body.categoryIds || []);
 
     return this.inventoryService.createProduct(
-      body.nombre, 
-      body.cantidad, 
-      body.precio, 
+      body.nombre,
+      body.cantidad,
+      body.precio,
       categoryIds,
       imagenUrl,
       body.esCombo,
@@ -140,7 +165,7 @@ export class InventoryController {
     const data: any = { ...body };
     if (typeof body.categoryIds === 'string') data.categoryIds = JSON.parse(body.categoryIds);
     if (file) data.imagenUrl = `/uploads/${file.filename}`;
-    
+
     return this.inventoryService.updateProduct(id, data);
   }
 
