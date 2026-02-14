@@ -12,7 +12,7 @@ const devDbPath = join(backendRoot, 'data', 'db.sqlite');
   imports: [
     // Servir el frontend compilado
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'client'),
+      rootPath: join(__dirname, '..', '..', 'dist'),
       exclude: ['/api{/*path}'],
       serveStaticOptions: {
         cacheControl: true,
@@ -22,16 +22,14 @@ const devDbPath = join(backendRoot, 'data', 'db.sqlite');
     TypeOrmModule.forRoot({
       type: 'sqlite',
       // En Azure/Producción usamos carpeta persistente montada; en dev, ruta fija
-      database: process.env.NODE_ENV === 'production'
-        ? '/home/data/db.sqlite'
+      database: process.env.NODE_ENV === 'production' 
+        ? '/home/data/db.sqlite' 
         : devDbPath,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      // SQLite + proyecto en desarrollo: synchronize siempre crea/alinea las tablas
-      synchronize: true,
-      logging: process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true',
+      synchronize: process.env.NODE_ENV !== 'production', // Desactivar en producción para evitar pérdida de datos
     }),
     AuthModule,
     InventoryModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

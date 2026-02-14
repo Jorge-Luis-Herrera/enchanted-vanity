@@ -16,20 +16,20 @@ export class InventoryService implements OnModuleInit {
     private shelfRepository: Repository<Shelf>,
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
-  ) { }
+  ) {}
 
   // Helper para borrar archivos físicos
   private deleteFile(fileUrl: string) {
     if (!fileUrl) return;
-
+    
     // Convertir URL (/uploads/file.ext) a ruta física
     const fileName = fileUrl.replace('/uploads/', '');
-    const uploadsDir = process.env.NODE_ENV === 'production'
-      ? '/home/data/uploads'
+    const uploadsDir = process.env.NODE_ENV === 'production' 
+      ? '/home/data/uploads' 
       : join(__dirname, '..', '..', 'uploads');
-
+    
     const filePath = join(uploadsDir, fileName);
-
+    
     if (fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
@@ -41,27 +41,19 @@ export class InventoryService implements OnModuleInit {
 
   // ─── Seed de datos inicial ───
   async onModuleInit() {
-    const isProd = process.env.NODE_ENV === 'production';
-    console.log(`[DATABASE] Inicializando... (Modo: ${isProd ? 'PRODUCCIÓN' : 'DESARROLLO'})`);
-    try {
-      const count = await this.shelfRepository.count();
-      console.log(`[DATABASE] Conexión exitosa. Estanterías encontradas: ${count}`);
-    } catch (err) {
-      console.error('[DATABASE] ERROR CRÍTICO de conexión a la base de datos:', err.message);
-      console.error('[DATABASE] Ruta intentada:', isProd ? '/home/data/db.sqlite' : 'data/db.sqlite');
+    /*
+    const count = await this.shelfRepository.count();
+    if (count === 0) {
+      // ... (Rest of seed logic)
     }
+    */
   }
 
   // ─── Estanterías ───
   async getInventario(): Promise<Shelf[]> {
-    try {
-      return await this.shelfRepository.find({
-        relations: ['categorias', 'categorias.productos'],
-      });
-    } catch (err) {
-      console.error('[DATABASE] Error obteniendo inventario:', err.message);
-      throw err; // Re-lanzar para que Nest lo maneje como 500 pero con log detallado
-    }
+    return this.shelfRepository.find({
+      relations: ['categorias', 'categorias.productos'],
+    });
   }
 
   async createShelf(titulo: string): Promise<Shelf> {
@@ -84,7 +76,7 @@ export class InventoryService implements OnModuleInit {
   async createCategory(nombre: string, shelfId: number, imagenUrl?: string): Promise<Category> {
     const shelf = await this.shelfRepository.findOneBy({ id: shelfId });
     if (!shelf) throw new NotFoundException('Estantería no encontrada');
-
+    
     const newCat = this.categoryRepository.create({ nombre, estanteria: shelf, imagenUrl });
     return this.categoryRepository.save(newCat);
   }
@@ -103,7 +95,7 @@ export class InventoryService implements OnModuleInit {
       relations: ['productos'],
     });
     if (!category) throw new NotFoundException('Categoría no encontrada');
-
+    
     // Devolvemos todos los productos de la categoría, incluyendo combos y ofertas
     return category.productos;
   }
@@ -137,22 +129,22 @@ export class InventoryService implements OnModuleInit {
   }
 
   async createProduct(
-    nombre: string,
-    cantidad: number,
-    precio: number,
+    nombre: string, 
+    cantidad: number, 
+    precio: number, 
     categoryIds: number[],
-    imagenUrl?: string,
-    esCombo?: boolean,
+    imagenUrl?: string, 
+    esCombo?: boolean, 
     esOferta?: boolean
   ): Promise<Product> {
-    const categories = categoryIds.length > 0
+    const categories = categoryIds.length > 0 
       ? await this.categoryRepository.findBy({ id: In(categoryIds) })
       : [];
 
-    const newProduct = this.productRepository.create({
-      nombre,
-      cantidad,
-      precio,
+    const newProduct = this.productRepository.create({ 
+      nombre, 
+      cantidad, 
+      precio, 
       imagenUrl,
       esCombo: esCombo || false,
       esOferta: esOferta || false,
@@ -182,7 +174,7 @@ export class InventoryService implements OnModuleInit {
     if (data.nombre !== undefined) product.nombre = data.nombre;
     if (data.cantidad !== undefined) product.cantidad = data.cantidad;
     if (data.precio !== undefined) product.precio = data.precio;
-
+    
     if (data.imagenUrl !== undefined) {
       // Si ya tenía imagen y es distinta, borrar la vieja
       if (product.imagenUrl && product.imagenUrl !== data.imagenUrl) {
@@ -195,7 +187,7 @@ export class InventoryService implements OnModuleInit {
     if (data.esOferta !== undefined) product.esOferta = data.esOferta;
 
     if (data.categoryIds !== undefined) {
-      product.categorias = data.categoryIds.length > 0
+      product.categorias = data.categoryIds.length > 0 
         ? await this.categoryRepository.findBy({ id: In(data.categoryIds) })
         : [];
     }
@@ -281,8 +273,9 @@ export class InventoryService implements OnModuleInit {
   async updateStock(id: number, cantidad: number): Promise<Product> {
     const product = await this.productRepository.findOneBy({ id });
     if (!product) throw new NotFoundException('Producto no encontrado');
-
+    
     product.cantidad = cantidad;
     return this.productRepository.save(product);
   }
 }
+2

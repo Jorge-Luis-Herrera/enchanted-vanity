@@ -81,27 +81,11 @@ let InventoryService = class InventoryService {
         }
     }
     async onModuleInit() {
-        const isProd = process.env.NODE_ENV === 'production';
-        console.log(`[DATABASE] Inicializando... (Modo: ${isProd ? 'PRODUCCIÓN' : 'DESARROLLO'})`);
-        try {
-            const count = await this.shelfRepository.count();
-            console.log(`[DATABASE] Conexión exitosa. Estanterías encontradas: ${count}`);
-        }
-        catch (err) {
-            console.error('[DATABASE] ERROR CRÍTICO de conexión a la base de datos:', err.message);
-            console.error('[DATABASE] Ruta intentada:', isProd ? '/home/data/db.sqlite' : 'data/db.sqlite');
-        }
     }
     async getInventario() {
-        try {
-            return await this.shelfRepository.find({
-                relations: ['categorias', 'categorias.productos'],
-            });
-        }
-        catch (err) {
-            console.error('[DATABASE] Error obteniendo inventario:', err.message);
-            throw err;
-        }
+        return this.shelfRepository.find({
+            relations: ['categorias', 'categorias.productos'],
+        });
     }
     async createShelf(titulo) {
         const newShelf = this.shelfRepository.create({ titulo });

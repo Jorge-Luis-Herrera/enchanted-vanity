@@ -27,8 +27,14 @@ const Tienda = () => {
 
     useEffect(() => {
         Promise.all([
-            fetch(`${API_URL}/inventory`).then(res => res.json()),
-            fetch(`${API_URL}/inventory/featured`).then(res => res.json()),
+            fetch(`${API_URL}/inventory`).then(res => {
+                if (!res.ok) throw new Error("Error cargando inventario");
+                return res.json();
+            }),
+            fetch(`${API_URL}/inventory/featured`).then(res => {
+                if (!res.ok) throw new Error("Error cargando destacados");
+                return res.json();
+            }),
         ])
         .then(([inv, feat]) => {
             setInventario(Array.isArray(inv) ? inv : []);

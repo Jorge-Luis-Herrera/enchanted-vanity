@@ -7,25 +7,25 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   // Asegurar que las carpetas existen ANTES de arrancar NestJS
-  const isProd = process.env.NODE_ENV === 'production';
-  const uploadsPath = isProd ? '/home/data/uploads' : join(__dirname, '..', 'uploads');
-  const dataPath = isProd ? '/home/data' : join(__dirname, '..', 'data');
+  const uploadsPath = process.env.NODE_ENV === 'production' 
+    ? '/home/data/uploads' 
+    : join(__dirname, '..', 'uploads');
+  
+  if (!fs.existsSync(uploadsPath)) {
+    fs.mkdirSync(uploadsPath, { recursive: true });
+  }
 
-  const ensureDir = (path: string) => {
-    try {
-      if (!fs.existsSync(path)) {
-        fs.mkdirSync(path, { recursive: true });
-        console.log(`[STARTUP] Carpeta creada exitosamente: ${path}`);
-      } else {
-        console.log(`[STARTUP] Carpeta ya existe: ${path}`);
-      }
-    } catch (err) {
-      console.error(`[STARTUP] ERROR crítico creando carpeta ${path}:`, err.message);
+  if (process.env.NODE_ENV === 'production') {
+    const dbPath = '/home/data';
+    if (!fs.existsSync(dbPath)) {
+      fs.mkdirSync(dbPath, { recursive: true });
     }
-  };
-
-  ensureDir(dataPath);
-  ensureDir(uploadsPath);
+  } else {
+    const devDataPath = join(__dirname, '..', 'data');
+    if (!fs.existsSync(devDataPath)) {
+      fs.mkdirSync(devDataPath, { recursive: true });
+    }
+  }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -36,7 +36,7 @@ async function bootstrap() {
   }));
 
   app.enableCors();
-
+  
   // Prefijo global para que no choque con el frontend
   app.setGlobalPrefix('api');
 
@@ -46,19 +46,18 @@ async function bootstrap() {
 
   // Azure usa process.env.PORT
   const port = process.env.PORT || 3000;
-
+  
   try {
     await app.listen(port);
-    console.log(`[STARTUP] Servidor corriendo exitosamente en el puerto: ${port}`);
-    console.log(`[STARTUP] Modo: ${isProd ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
-    console.log(`[STARTUP] Base de datos: ${isProd ? '/home/data/db.sqlite' : 'data/db.sqlite'}`);
+    console.log(`Servidor corriendo en el puerto: ${port}`);
   } catch (err) {
     if (err.code === 'EADDRINUSE') {
-      console.error(`[STARTUP] ERROR FATAL: El puerto ${port} ya está en uso.`);
+      console.error(`Error: El puerto ${port} ya está en uso. Intenta cerrarlo o usar otro puerto.`);
+      process.exit(1);
     } else {
-      console.error(`[STARTUP] ERROR FATAL al iniciar el servidor:`, err.message);
+      console.error('Error al iniciar el servidor:', err);
+      process.exit(1);
     }
-    process.exit(1);
   }
 }
 bootstrap();
