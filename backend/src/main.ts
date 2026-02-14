@@ -7,35 +7,25 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   // Asegurar que las carpetas existen ANTES de arrancar NestJS
-  const uploadsPath = process.env.NODE_ENV === 'production' 
-    ? '/home/data/uploads' 
-    : join(__dirname, '..', 'uploads');
-  
-  try {
-    if (!fs.existsSync(uploadsPath)) {
-      fs.mkdirSync(uploadsPath, { recursive: true });
-      console.log(`Carpeta de uploads creada: ${uploadsPath}`);
-    }
-  } catch (err) {
-    console.error(`Error creando carpeta de uploads ${uploadsPath}:`, err.message);
-  }
+  const isProd = process.env.NODE_ENV === 'production';
+  const uploadsPath = isProd ? '/home/data/uploads' : join(__dirname, '..', 'uploads');
+  const dataPath = isProd ? '/home/data' : join(__dirname, '..', 'data');
 
-  if (process.env.NODE_ENV === 'production') {
-    const dbPath = '/home/data';
+  const ensureDir = (path: string) => {
     try {
-      if (!fs.existsSync(dbPath)) {
-        fs.mkdirSync(dbPath, { recursive: true });
-        console.log(`Carpeta creada: ${dbPath}`);
+      if (!fs.existsSync(path)) {
+        fs.mkdirSync(path, { recursive: true });
+        console.log(`[STARTUP] Carpeta creada exitosamente: ${path}`);
+      } else {
+        console.log(`[STARTUP] Carpeta ya existe: ${path}`);
       }
     } catch (err) {
-      console.error(`Error creando carpeta ${dbPath}:`, err.message);
+      console.error(`[STARTUP] ERROR crítico creando carpeta ${path}:`, err.message);
     }
-  } else {
-    const devDataPath = join(__dirname, '..', 'data');
-    if (!fs.existsSync(devDataPath)) {
-      fs.mkdirSync(devDataPath, { recursive: true });
-    }
-  }
+  };
+
+  ensureDir(dataPath);
+  ensureDir(uploadsPath);
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -46,7 +36,7 @@ async function bootstrap() {
   }));
 
   app.enableCors();
-  
+
   // Prefijo global para que no choque con el frontend
   app.setGlobalPrefix('api');
 
@@ -56,7 +46,19 @@ async function bootstrap() {
 
   // Azure usa process.env.PORT
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Servidor corriendo en el puerto: ${port}`);
+
+  try {
+    await app.listen(port);
+    console.log(`[STARTUP] Servidor corriendo exitosamente en el puerto: ${port}`);
+    console.log(`[STARTUP] Modo: ${isProd ? 'PRODUCCIÓN' : 'DESARROLLO'}`);
+    console.log(`[STARTUP] Base de datos: ${isProd ? '/home/data/db.sqlite' : 'data/db.sqlite'}`);
+  } catch (err) {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[STARTUP] ERROR FATAL: El puerto ${port} ya está en uso.`);
+    } else {
+      console.error(`[STARTUP] ERROR FATAL al iniciar el servidor:`, err.message);
+    }
+    process.exit(1);
+  }
 }
 bootstrap();

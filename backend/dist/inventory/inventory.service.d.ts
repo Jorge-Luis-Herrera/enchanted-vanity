@@ -8,6 +8,7 @@ export declare class InventoryService implements OnModuleInit {
     private shelfRepository;
     private categoryRepository;
     constructor(productRepository: Repository<Product>, shelfRepository: Repository<Shelf>, categoryRepository: Repository<Category>);
+    private deleteFile;
     onModuleInit(): Promise<void>;
     getInventario(): Promise<Shelf[]>;
     createShelf(titulo: string): Promise<Shelf>;
@@ -30,5 +31,6 @@ export declare class InventoryService implements OnModuleInit {
         categoryIds?: number[];
     }): Promise<Product>;
     deleteProduct(id: number): Promise<void>;
+    seedTestProducts(): Promise<Product[]>;
     updateStock(id: number, cantidad: number): Promise<Product>;
 }

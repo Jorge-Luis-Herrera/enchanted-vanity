@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
@@ -19,6 +52,8 @@ const typeorm_2 = require("typeorm");
 const product_entity_1 = require("./entities/product.entity");
 const shelf_entity_1 = require("./entities/shelf.entity");
 const category_entity_1 = require("./entities/category.entity");
+const fs = __importStar(require("fs"));
+const path_1 = require("path");
 let InventoryService = class InventoryService {
     productRepository;
     shelfRepository;
@@ -28,33 +63,45 @@ let InventoryService = class InventoryService {
         this.shelfRepository = shelfRepository;
         this.categoryRepository = categoryRepository;
     }
+    deleteFile(fileUrl) {
+        if (!fileUrl)
+            return;
+        const fileName = fileUrl.replace('/uploads/', '');
+        const uploadsDir = process.env.NODE_ENV === 'production'
+            ? '/home/data/uploads'
+            : (0, path_1.join)(__dirname, '..', '..', 'uploads');
+        const filePath = (0, path_1.join)(uploadsDir, fileName);
+        if (fs.existsSync(filePath)) {
+            try {
+                fs.unlinkSync(filePath);
+            }
+            catch (err) {
+                console.error(`Error eliminando archivo: ${filePath}`, err);
+            }
+        }
+    }
     async onModuleInit() {
-        const count = await this.shelfRepository.count();
-        if (count === 0) {
-            const s1 = await this.shelfRepository.save({ titulo: 'Maquillaje' });
-            const s2 = await this.shelfRepository.save({ titulo: 'Cuidado de Piel' });
-            const cat1 = await this.categoryRepository.save({ nombre: 'Labiales', estanteria: s1 });
-            const cat2 = await this.categoryRepository.save({ nombre: 'Bases y Correctores', estanteria: s1 });
-            const cat3 = await this.categoryRepository.save({ nombre: 'Cremas Hidratantes', estanteria: s2 });
-            const p1 = this.productRepository.create({ nombre: 'Labial Rojo Intenso', cantidad: 15, precio: 12.50 });
-            const p2 = this.productRepository.create({ nombre: 'Labial Nude Rose', cantidad: 20, precio: 10.00 });
-            const p3 = this.productRepository.create({ nombre: 'Base Líquida Mate', cantidad: 8, precio: 25.00 });
-            const p4 = this.productRepository.create({ nombre: 'Corrector de Ojeras', cantidad: 12, precio: 15.00 });
-            const p5 = this.productRepository.create({ nombre: 'Crema Hidratante SPF30', cantidad: 10, precio: 30.00 });
-            const p6 = this.productRepository.create({ nombre: 'Combo Labiales x3', cantidad: 5, precio: 28.00, esCombo: true });
-            const p7 = this.productRepository.create({ nombre: 'Oferta Base + Corrector', cantidad: 3, precio: 35.00, esOferta: true });
-            await this.productRepository.save([p1, p2, p3, p4, p5, p6, p7]);
-            cat1.productos = [p1, p2, p6];
-            cat2.productos = [p3, p4, p7];
-            cat3.productos = [p5];
-            await this.categoryRepository.save([cat1, cat2, cat3]);
-            console.log('Base de datos inicializada con categorías y productos');
+        const isProd = process.env.NODE_ENV === 'production';
+        console.log(`[DATABASE] Inicializando... (Modo: ${isProd ? 'PRODUCCIÓN' : 'DESARROLLO'})`);
+        try {
+            const count = await this.shelfRepository.count();
+            console.log(`[DATABASE] Conexión exitosa. Estanterías encontradas: ${count}`);
+        }
+        catch (err) {
+            console.error('[DATABASE] ERROR CRÍTICO de conexión a la base de datos:', err.message);
+            console.error('[DATABASE] Ruta intentada:', isProd ? '/home/data/db.sqlite' : 'data/db.sqlite');
         }
     }
     async getInventario() {
-        return this.shelfRepository.find({
-            relations: ['categorias'],
-        });
+        try {
+            return await this.shelfRepository.find({
+                relations: ['categorias', 'categorias.productos'],
+            });
+        }
+        catch (err) {
+            console.error('[DATABASE] Error obteniendo inventario:', err.message);
+            throw err;
+        }
     }
     async createShelf(titulo) {
         const newShelf = this.shelfRepository.create({ titulo });
@@ -76,6 +123,10 @@ let InventoryService = class InventoryService {
         return this.categoryRepository.save(newCat);
     }
     async deleteCategory(id) {
+        const category = await this.categoryRepository.findOneBy({ id });
+        if (category && category.imagenUrl) {
+            this.deleteFile(category.imagenUrl);
+        }
         await this.categoryRepository.delete(id);
     }
     async getCategoryProducts(categoryId) {
@@ -85,7 +136,7 @@ let InventoryService = class InventoryService {
         });
         if (!category)
             throw new common_1.NotFoundException('Categoría no encontrada');
-        return category.productos.filter(p => !p.esCombo && !p.esOferta);
+        return category.productos;
     }
     async assignProductsToCategory(categoryId, productIds) {
         const category = await this.categoryRepository.findOne({
@@ -139,8 +190,12 @@ let InventoryService = class InventoryService {
             product.cantidad = data.cantidad;
         if (data.precio !== undefined)
             product.precio = data.precio;
-        if (data.imagenUrl !== undefined)
+        if (data.imagenUrl !== undefined) {
+            if (product.imagenUrl && product.imagenUrl !== data.imagenUrl) {
+                this.deleteFile(product.imagenUrl);
+            }
             product.imagenUrl = data.imagenUrl;
+        }
         if (data.esCombo !== undefined)
             product.esCombo = data.esCombo;
         if (data.esOferta !== undefined)
@@ -159,9 +214,61 @@ let InventoryService = class InventoryService {
         });
         if (!product)
             throw new common_1.NotFoundException('Producto no encontrado');
+        if (product.imagenUrl) {
+            this.deleteFile(product.imagenUrl);
+        }
         product.categorias = [];
         await this.productRepository.save(product);
         await this.productRepository.delete(id);
+    }
+    async seedTestProducts() {
+        let categorias = await this.categoryRepository.find({ relations: ['estanteria'] });
+        if (categorias.length === 0) {
+            const shelf = await this.shelfRepository.save({ titulo: 'Pruebas' });
+            const demoCat = await this.categoryRepository.save({ nombre: 'Demostración', estanteria: shelf });
+            categorias = [demoCat];
+        }
+        const nombres = [
+            'Brillo Aurora',
+            'Serum Nocturno',
+            'Labial Velvet',
+            'Delineador Prisma',
+            'Rubor Holográfico',
+            'Iluminador Boreal',
+            'Base Seda',
+            'Máscara Volumen',
+            'Tónico Floral',
+            'Aceite Lumi'
+        ];
+        const imagenes = [
+            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800',
+            'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800',
+            'https://images.unsplash.com/photo-1526045478516-99145907023c?w=800',
+            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=700',
+            'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=800',
+            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600',
+            'https://images.unsplash.com/photo-1526045431048-0c1df022bdd7?w=800',
+            'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=700',
+            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500',
+            'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=600'
+        ];
+        const nuevos = [];
+        for (let i = 0; i < 10; i++) {
+            const categoria = categorias[Math.floor(Math.random() * categorias.length)];
+            const esCombo = i % 3 === 0;
+            const esOferta = i % 3 === 1;
+            const producto = this.productRepository.create({
+                nombre: `${nombres[i % nombres.length]} #${i + 1}`,
+                cantidad: Math.floor(Math.random() * 15) + 5,
+                precio: parseFloat((Math.random() * 80 + 10).toFixed(2)),
+                imagenUrl: imagenes[i % imagenes.length],
+                esCombo,
+                esOferta,
+                categorias: [categoria],
+            });
+            nuevos.push(producto);
+        }
+        return this.productRepository.save(nuevos);
     }
     async updateStock(id, cantidad) {
         const product = await this.productRepository.findOneBy({ id });

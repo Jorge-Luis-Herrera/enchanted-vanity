@@ -19,6 +19,8 @@ const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
 const path_1 = require("path");
+const create_product_dto_1 = require("./dto/create-product.dto");
+const update_product_dto_1 = require("./dto/update-product.dto");
 const multerConfig = {
     storage: (0, multer_1.diskStorage)({
         destination: (req, file, cb) => {
@@ -69,24 +71,19 @@ let InventoryController = class InventoryController {
     async findFeaturedProducts() {
         return this.inventoryService.getFeaturedProducts();
     }
+    async seedTestProducts() {
+        return this.inventoryService.seedTestProducts();
+    }
     async createProduct(file, body) {
         const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
-        const categoryIds = body.categoryIds ? JSON.parse(body.categoryIds) : [];
-        return this.inventoryService.createProduct(body.nombre, parseInt(body.cantidad), parseFloat(body.precio), categoryIds, imagenUrl, body.esCombo === 'true', body.esOferta === 'true');
+        const categoryIds = typeof body.categoryIds === 'string'
+            ? JSON.parse(body.categoryIds)
+            : (body.categoryIds || []);
+        return this.inventoryService.createProduct(body.nombre, body.cantidad, body.precio, categoryIds, imagenUrl, body.esCombo, body.esOferta);
     }
     async updateProduct(id, file, body) {
-        const data = {};
-        if (body.nombre !== undefined)
-            data.nombre = body.nombre;
-        if (body.cantidad !== undefined)
-            data.cantidad = parseInt(body.cantidad);
-        if (body.precio !== undefined)
-            data.precio = parseFloat(body.precio);
-        if (body.esCombo !== undefined)
-            data.esCombo = body.esCombo === 'true';
-        if (body.esOferta !== undefined)
-            data.esOferta = body.esOferta === 'true';
-        if (body.categoryIds !== undefined)
+        const data = { ...body };
+        if (typeof body.categoryIds === 'string')
             data.categoryIds = JSON.parse(body.categoryIds);
         if (file)
             data.imagenUrl = `/uploads/${file.filename}`;
@@ -175,13 +172,19 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "findFeaturedProducts", null);
 __decorate([
+    (0, common_1.Post)('seed-test-products'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "seedTestProducts", null);
+__decorate([
     (0, common_1.Post)('product'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imagen', multerConfig)),
     __param(0, (0, common_1.UploadedFile)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, create_product_dto_1.CreateProductDto]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "createProduct", null);
 __decorate([
@@ -192,7 +195,7 @@ __decorate([
     __param(1, (0, common_1.UploadedFile)()),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object, Object]),
+    __metadata("design:paramtypes", [Number, Object, update_product_dto_1.UpdateProductDto]),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "updateProduct", null);
 __decorate([

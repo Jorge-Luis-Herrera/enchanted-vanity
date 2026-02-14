@@ -2,6 +2,8 @@ import { InventoryService } from './inventory.service';
 import { Shelf } from './entities/shelf.entity';
 import { Product } from './entities/product.entity';
 import { Category } from './entities/category.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 export declare class InventoryController {
     private readonly inventoryService;
     constructor(inventoryService: InventoryService);
@@ -22,22 +24,9 @@ export declare class InventoryController {
     }): Promise<Category>;
     findAllProducts(): Promise<Product[]>;
     findFeaturedProducts(): Promise<Product[]>;
-    createProduct(file: Express.Multer.File, body: {
-        nombre: string;
-        cantidad: string;
-        precio: string;
-        categoryIds?: string;
-        esCombo?: string;
-        esOferta?: string;
-    }): Promise<Product>;
-    updateProduct(id: number, file: Express.Multer.File, body: {
-        nombre?: string;
-        cantidad?: string;
-        precio?: string;
-        esCombo?: string;
-        esOferta?: string;
-        categoryIds?: string;
-    }): Promise<Product>;
+    seedTestProducts(): Promise<Product[]>;
+    createProduct(file: Express.Multer.File, body: CreateProductDto): Promise<Product>;
+    updateProduct(id: number, file: Express.Multer.File, body: UpdateProductDto): Promise<Product>;
     deleteProduct(id: number): Promise<void>;
     updateStock(id: number, body: {
         cantidad: number;
