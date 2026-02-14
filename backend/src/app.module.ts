@@ -12,7 +12,9 @@ const devDbPath = join(backendRoot, 'data', 'db.sqlite');
   imports: [
     // Servir el frontend compilado
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', 'dist'),
+      rootPath: process.env.NODE_ENV === 'production'
+        ? join(__dirname, '..', 'client')  // Azure (segun el workflow)
+        : join(__dirname, '..', '..', 'dist'), // Local
       exclude: ['/api{/*path}'],
       serveStaticOptions: {
         cacheControl: true,
