@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../apiConfig";
+import { getAuthHeaders } from "../utils/auth";
 import "./AdminShelves.css";
 
 const AdminShelves = () => {
     const [shelves, setShelves] = useState([]);
     const [newShelfTitle, setNewShelfTitle] = useState("");
-    const [newShelfId, setNewShelfId] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         fetchShelves();
@@ -20,55 +21,61 @@ const AdminShelves = () => {
 
     const handleCreateShelf = (e) => {
         e.preventDefault();
-        if (!newShelfId || !newShelfTitle) return;
+        setError("");
+        const trimmed = newShelfTitle.trim();
+        if (!trimmed) {
+            setError("El nombre de la estantería no puede estar vacío.");
+            return;
+        }
+        if (trimmed.length < 2) {
+            setError("El nombre debe tener al menos 2 caracteres.");
+            return;
+        }
 
         fetch(`${API_URL}/inventory/shelf`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: newShelfId, titulo: newShelfTitle })
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            body: JSON.stringify({ titulo: trimmed })
         })
         .then(() => {
-            setNewShelfId("");
             setNewShelfTitle("");
+            setError("");
             fetchShelves();
-            alert("Categoría creada con éxito");
+            alert("Estantería creada con éxito");
         })
         .catch(err => console.error("Error creando estantería", err));
     };
 
     const handleDeleteShelf = (id) => {
-        if (!window.confirm("¿Seguro que quieres eliminar esta categoría y TODOS sus productos asociados?")) return;
+        if (!window.confirm("¿Seguro que quieres eliminar esta estantería y TODAS sus categorías asociadas?")) return;
 
         fetch(`${API_URL}/inventory/shelf/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: getAuthHeaders()
         })
         .then(() => {
             fetchShelves();
-            alert("Categoría y productos eliminados con éxito.");
+            alert("Estantería y categorías eliminadas con éxito.");
         })
         .catch(err => console.error("Error eliminando estantería", err));
     };
 
     return (
         <div className="admin-view">
-            <h1>Gestión de Categorías</h1>
+            <h1>Gestión de Estanterías</h1>
             
             <form className="admin-form" onSubmit={handleCreateShelf}>
-                <h3>Nueva Sección / Categoría</h3>
+                <h3>Nueva Estantería</h3>
+                {error && <p className="admin-form-error">{error}</p>}
                 <div className="form-group">
                     <input 
                         type="text" 
-                        placeholder="ID Técnico (ej: s3)" 
-                        value={newShelfId}
-                        onChange={(e) => setNewShelfId(e.target.value)}
-                    />
-                    <input 
-                        type="text" 
-                        placeholder="Nombre de la Categoría" 
+                        placeholder="Nombre de la Estantería" 
                         value={newShelfTitle}
-                        onChange={(e) => setNewShelfTitle(e.target.value)}
+                        onChange={(e) => { setNewShelfTitle(e.target.value); setError(""); }}
+                        className={error ? "input-error" : ""}
                     />
-                    <button type="submit" className="add-btn">Añadir Categoría</button>
+                    <button type="submit" className="add-btn">Añadir Estantería</button>
                 </div>
             </form>
 
@@ -76,9 +83,9 @@ const AdminShelves = () => {
                 <table className="admin-table">
                     <thead>
                         <tr>
-                            <th>Código</th>
-                            <th>Descripción / Título</th>
-                            <th>Total Productos</th>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Total Categorías</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -87,7 +94,7 @@ const AdminShelves = () => {
                             <tr key={shelf.id}>
                                 <td>{shelf.id}</td>
                                 <td>{shelf.titulo}</td>
-                                <td>{shelf.productos?.length || 0}</td>
+                                <td>{shelf.categorias?.length || 0}</td>
                                 <td>
                                     <button 
                                         className="del-btn" 

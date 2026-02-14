@@ -3,13 +3,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { InventoryModule } from './inventory/inventory.module';
+import { AuthModule } from './auth/auth.module';
+
+const backendRoot = join(__dirname, '..');
+const devDbPath = join(backendRoot, 'data', 'db.sqlite');
 
 @Module({
   imports: [
     // Servir el frontend compilado
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client'),
-      exclude: ['/api/(.*)'],
+      exclude: ['/api{/*path}'],
       serveStaticOptions: {
         cacheControl: true,
       },
@@ -17,13 +21,14 @@ import { InventoryModule } from './inventory/inventory.module';
     // Configuración de la base de datos
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      // En Azure/Producción usamos una carpeta persistente fuera del código volátil
+      // En Azure/Producción usamos carpeta persistente montada; en dev, ruta fija
       database: process.env.NODE_ENV === 'production' 
         ? '/home/data/db.sqlite' 
-        : 'db.sqlite',
+        : devDbPath,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, // Cambiar a false en producciones reales
+      synchronize: process.env.NODE_ENV !== 'production', // Desactivar en producción para evitar pérdida de datos
     }),
+    AuthModule,
     InventoryModule,
   ],
 })

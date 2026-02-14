@@ -1,13 +1,16 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { STATIC_URL } from "../apiConfig";
 import "./catalogo.css";
 
-const ProductCard = ({ name, quantity, price, imagenUrl }) => {
+const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     
     // Ruta base del backend para las imágenes
-    const fullImgUrl = imagenUrl ? `${STATIC_URL}${imagenUrl}` : null;
+    const fullImgUrl = imagenUrl
+        ? (imagenUrl.startsWith('http') ? imagenUrl : `${STATIC_URL}${imagenUrl}`)
+        : null;
 
     // Bloquear scroll cuando el modal está abierto
     React.useEffect(() => {
@@ -22,7 +25,7 @@ const ProductCard = ({ name, quantity, price, imagenUrl }) => {
     return (
         <>
             <div 
-                className="product-card" 
+                className={`product-card ${(esCombo || esOferta) ? "product-card-featured" : ""}`}
                 onClick={() => setIsOpen(true)}
                 style={{ 
                     backgroundImage: fullImgUrl ? `url(${fullImgUrl})` : 'none',
@@ -31,6 +34,12 @@ const ProductCard = ({ name, quantity, price, imagenUrl }) => {
                     cursor: 'pointer'
                 }}
             >
+                {(esCombo || esOferta) && (
+                    <div className="product-badges">
+                        {esCombo && <span className="badge badge-combo">Combo</span>}
+                        {esOferta && <span className="badge badge-oferta">Oferta</span>}
+                    </div>
+                )}
                 <div className="card-glass-overlay">
                     <div className="product-info">
                         <h3>{name}</h3>
@@ -41,7 +50,7 @@ const ProductCard = ({ name, quantity, price, imagenUrl }) => {
             </div>
 
             {/* Modal de Detalle Avanzado (Efecto 3D) */}
-            {isOpen && (
+            {isOpen && createPortal(
                 <div className="modal-overlay" onClick={() => setIsOpen(false)}>
                     <div className="modal-content-3d" onClick={(e) => e.stopPropagation()}>
                         <button className="close-modal" onClick={() => setIsOpen(false)}>&times;</button>
@@ -74,22 +83,31 @@ const ProductCard = ({ name, quantity, price, imagenUrl }) => {
                                     </div>
                                 </div>
                                 <p className="description">
-                                    Este producto forma parte del inventario exclusivo de Enchanted Vanity. 
+                                    Este producto forma parte del inventario exclusivo de B&V Cosméticos. 
                                     Garantizamos la máxima calidad en cada pieza del catálogo.
                                 </p>
-                                <button className="action-btn">Adquirir Ahora</button>
+                                <a
+                                    href={`https://wa.me/5356126873?text=${encodeURIComponent(`Hola, me interesa el producto: ${name}`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="action-btn"
+                                >
+                                    Adquirir Ahora
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Vista de Imagen Expandida (Full Screen) */}
-            {isExpanded && (
+            {isExpanded && createPortal(
                 <div className="fullscreen-image-overlay" onClick={() => setIsExpanded(false)}>
                     <button className="close-expanded" onClick={() => setIsExpanded(false)}>&times;</button>
                     <img src={fullImgUrl} alt={name} className="expanded-image" />
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

@@ -1,13 +1,22 @@
 export interface Producto {
     id: number;
     nombre: string;
-    cantidad:number;
+    cantidad: number;
     precio: number;
+    imagenUrl?: string;
+    esCombo: boolean;
+    esOferta: boolean;
+}
+
+export interface Categoria {
+    id: number;
+    nombre: string;
+    imagenUrl?: string;
+    productos?: Producto[];
 }
 
 export interface Estanteria {
-    id: string;
+    id: number;
     titulo: string;
-    productos: Producto[];
-
+    categorias: Categoria[];
 }

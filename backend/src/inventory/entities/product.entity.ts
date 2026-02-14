@@ -1,9 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-import { Shelf } from './shelf.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
+import { Category } from './category.entity';
 
 @Entity()
 export class Product {
-  @PrimaryGeneratedColumn() // Crea un ID que se auto-incrementa (1, 2, 3...)
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
@@ -18,7 +18,14 @@ export class Product {
   @Column({ nullable: true })
   imagenUrl: string;
 
-  // Relación: Muchos productos pertenecen a una Estantería con eliminación en cascada
-  @ManyToOne(() => Shelf, (shelf) => shelf.productos, { onDelete: 'CASCADE' })
-  estanteria: Shelf;
+  // Especialización: combo u oferta (no aparecen en estanterías normales)
+  @Column({ default: false })
+  esCombo: boolean;
+
+  @Column({ default: false })
+  esOferta: boolean;
+
+  // Relación inversa: un producto puede estar en varias categorías
+  @ManyToMany(() => Category, (category) => category.productos)
+  categorias: Category[];
 }

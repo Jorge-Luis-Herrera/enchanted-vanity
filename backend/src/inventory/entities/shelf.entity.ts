@@ -1,14 +1,15 @@
-import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm'; // Quitamos el que fallaba
-import { Product } from './product.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Category } from './category.entity';
 
 @Entity()
 export class Shelf {
-  @PrimaryColumn() // <--- Esto ahora funcionará perfecto con strings como 's1'
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column()
   titulo: string;
 
-  @OneToMany(() => Product, (product) => product.estanteria)
-  productos: Product[];
+  // Una estantería contiene categorías (no productos directamente)
+  @OneToMany(() => Category, (category) => category.estanteria)
+  categorias: Category[];
 }

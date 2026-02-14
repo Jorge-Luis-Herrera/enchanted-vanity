@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as fs from 'fs';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   // Asegurar que las carpetas existen ANTES de arrancar NestJS
@@ -19,9 +20,21 @@ async function bootstrap() {
     if (!fs.existsSync(dbPath)) {
       fs.mkdirSync(dbPath, { recursive: true });
     }
+  } else {
+    const devDataPath = join(__dirname, '..', 'data');
+    if (!fs.existsSync(devDataPath)) {
+      fs.mkdirSync(devDataPath, { recursive: true });
+    }
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
+
   app.enableCors();
   
   // Prefijo global para que no choque con el frontend

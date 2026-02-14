@@ -30,14 +30,17 @@
     border: 1px solid var(--glass-border);
     border-radius: 50px;
 
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    transition: all 0.4s ease;
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        inset 0 0 1px 1px rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .main-header.scrolled {
     top: 5px;
     height: 54px;
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
 }
 
 .logo h1 {
@@ -58,24 +61,45 @@
 
 /* Search bar visible on mobile but smaller */
 .search-bar {
+    position: relative;
     flex: 1;
-    max-width: 150px;
+    max-width: 200px;
     margin: 0 10px;
+    display: flex;
+    align-items: center;
 }
 
 .search-bar input {
     width: 100%;
-    padding: 8px 15px;
+    padding: 8px 15px 8px 35px;
     border-radius: 20px;
     border: 1px solid var(--glass-border);
-    background: #fff;
+    background: rgba(255, 255, 255, 0.4);
     color: var(--text-dark);
     font-size: 0.8rem;
     outline: none;
+    backdrop-filter: blur(5px);
+}
+.search-icon-container {
+    position: absolute;
+    left: 5px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.search-icon-container img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
 }
 
 .search-bar input:focus {
     border-color: var(--accent-pink-dark);
+    box-shadow: 0 0 5px rgba(212, 126, 150, 0.3);
 }
 
 .contact-btn {
@@ -94,6 +118,67 @@
 .contact-btn:hover {
     background-color: var(--accent-pink-dark);
     color: var(--text-dark);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .main-header.is-searching {
+        /* Mantenemos las dimensiones y posición del header 'pastilla' */
+        padding: 0 10px;
+    }
+
+    .main-header.is-searching .logo,
+    .main-header.is-searching .actions,
+    .main-header.is-searching .nav-menu {
+        display: none !important;
+    }
+
+    .main-header.is-searching .search-bar {
+        max-width: 100%;
+        width: 100%;
+        margin: 0;
+        height: 80%; /* Ajuste para que quepa bien dentro del header */
+    }
+
+    .main-header.is-searching .search-bar input {
+        border: none;
+        font-size: 1rem;
+        padding-left: 45px;
+        height: 100%;
+        background: transparent; /* Mantenemos el fondo del header */
+    }
+
+    .search-bar {
+    }
+
+    .search-bar {
+        transition: all 0.3s ease-in-out;
+        max-width: 120px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon-container {
+        position: absolute;
+        left: 5px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        z-index: 5;
+    }
+
+    .search-bar input::placeholder {
+        color: transparent;
+    }
+
+    .logo h1 {
+        font-size: 0.85rem;
+    }
 }
 
 /* Desktop Styles */

@@ -1,12 +1,13 @@
 import React from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import { clearToken } from "../utils/auth";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        // Por ahora solo redirigimos, luego limpiaremos el token
+        clearToken();
         navigate("/");
     };
 
@@ -15,10 +16,11 @@ const AdminLayout = () => {
             <aside className="admin-sidebar">
                 <div className="sidebar-header">
                     <h2>Panel Admin</h2>
-                    <p>Enchanted Vanity</p>
+                    <p>B&V Cosméticos</p>
                 </div>
                 <nav className="sidebar-nav">
                     <Link to="/admin/estanterias" className="nav-item">Estanterías</Link>
+                    <Link to="/admin/categorias" className="nav-item">Categorías</Link>
                     <Link to="/admin/productos" className="nav-item">Productos</Link>
                     <Link to="/" className="nav-item return-shop">Ver Tienda</Link>
                 </nav>

@@ -1,21 +1,60 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Para redirigir tras entrar
+import { useNavigate } from "react-router-dom";
+import { API_URL } from "../apiConfig";
+import { setToken } from "../utils/auth";
 import "./login.css";
 
 const Login = () => {
     const [usuario, setUsuario] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
+        setError("");
 
-        // Credenciales de acceso: admin / admin123
-        if (usuario.toLowerCase() === "admin" && (password === "admin123" || password === "admin")) {
-            alert("Acceso autorizado. Bienvenido al Panel de Control.");
-            navigate("/admin/estanterias");
-        } else {
-            alert("Credenciales incorrectas. Verifique sus datos.");
+        const usuarioTrim = usuario.trim();
+        if (!usuarioTrim) {
+            setError("El usuario no puede estar vacío.");
+            return;
+        }
+        if (!password) {
+            setError("La contraseña no puede estar vacía.");
+            return;
+        }
+        if (password.length < 6) {
+            setError("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usuario: usuarioTrim, password }),
+            });
+            const text = await res.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch {
+                setError("Error en el servidor. Verifique que el backend esté corriendo en el puerto 3000.");
+                return;
+            }
+            if (data.ok && data.access_token) {
+                setToken(data.access_token);
+                alert("Acceso autorizado. Bienvenido al Panel de Control.");
+                navigate("/admin/estanterias");
+            } else {
+                setError(data.message || "Credenciales incorrectas. Verifique sus datos.");
+            }
+        } catch (err) {
+            setError("Error de conexión. Asegúrese de que el backend esté activo (cd backend && npm run start:dev).");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -26,6 +65,7 @@ const Login = () => {
                 <p>Ingrese sus credenciales para gestionar el catálogo</p>
 
                 <form onSubmit={handleLogin}>
+                    {error && <p className="login-error">{error}</p>}
                     <div className="input-group">
                         <label>Usuario</label>
                         <input
@@ -46,7 +86,9 @@ const Login = () => {
                         />
                     </div>
 
-                    <button type="submit" className="login-btn">Iniciar Sesión</button>
+                    <button type="submit" className="login-btn" disabled={loading}>
+                        {loading ? "Verificando..." : "Iniciar Sesión"}
+                    </button>
                 </form>
             </div>
         </div>
