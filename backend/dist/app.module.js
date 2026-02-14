@@ -34,7 +34,7 @@ exports.AppModule = AppModule = __decorate([
                     ? '/home/data/db.sqlite'
                     : devDbPath,
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                synchronize: process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true',
+                synchronize: true,
                 logging: process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true',
             }),
             auth_module_1.AuthModule,
