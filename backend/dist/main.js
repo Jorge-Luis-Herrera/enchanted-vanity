@@ -69,8 +69,20 @@ async function bootstrap() {
         prefix: '/uploads/',
     });
     const port = process.env.PORT || 3000;
-    await app.listen(port);
-    console.log(`Servidor corriendo en el puerto: ${port}`);
+    try {
+        await app.listen(port);
+        console.log(`Servidor corriendo en el puerto: ${port}`);
+    }
+    catch (err) {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`Error: El puerto ${port} ya está en uso. Intenta cerrarlo o usar otro puerto.`);
+            process.exit(1);
+        }
+        else {
+            console.error('Error al iniciar el servidor:', err);
+            process.exit(1);
+        }
+    }
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

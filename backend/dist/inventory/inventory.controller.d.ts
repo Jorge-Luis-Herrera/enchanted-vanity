@@ -8,6 +8,13 @@ export declare class InventoryController {
     private readonly inventoryService;
     constructor(inventoryService: InventoryService);
     healthCheck(): Promise<any>;
+    health(): Promise<{
+        status: string;
+        env: string | undefined;
+        db_sync: string | undefined;
+        cwd: string;
+        time: string;
+    }>;
     findAll(): Promise<Shelf[]>;
     createShelf(body: {
         titulo: string;

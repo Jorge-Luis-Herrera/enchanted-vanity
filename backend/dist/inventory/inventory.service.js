@@ -81,6 +81,16 @@ let InventoryService = class InventoryService {
         }
     }
     async onModuleInit() {
+        const count = await this.shelfRepository.count();
+        if (count === 0) {
+            console.log('Base de datos vacía. Creando datos iniciales...');
+            const shelf = await this.shelfRepository.save(this.shelfRepository.create({ titulo: 'Estantería Principal' }));
+            const cat = await this.categoryRepository.save(this.categoryRepository.create({
+                nombre: 'General',
+                estanteria: shelf
+            }));
+            console.log('Datos iniciales creados con éxito.');
+        }
     }
     async getInventario() {
         return this.shelfRepository.find({
@@ -272,4 +282,5 @@ exports.InventoryService = InventoryService = __decorate([
         typeorm_2.Repository,
         typeorm_2.Repository])
 ], InventoryService);
+2;
 //# sourceMappingURL=inventory.service.js.map

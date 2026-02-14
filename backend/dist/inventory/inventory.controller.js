@@ -26,7 +26,7 @@ const multerConfig = {
         destination: (req, file, cb) => {
             const dest = process.env.NODE_ENV === 'production'
                 ? '/home/data/uploads'
-                : './uploads';
+                : (0, path_1.join)(__dirname, '..', '..', 'uploads');
             cb(null, dest);
         },
         filename: (req, file, cb) => {
@@ -60,6 +60,15 @@ let InventoryController = class InventoryController {
             result.dbErrorStack = err.stack?.split('\n').slice(0, 5);
         }
         return result;
+    }
+    async health() {
+        return {
+            status: 'ok',
+            env: process.env.NODE_ENV,
+            db_sync: process.env.DB_SYNC,
+            cwd: process.cwd(),
+            time: new Date().toISOString()
+        };
     }
     async findAll() {
         return this.inventoryService.getInventario();
@@ -124,6 +133,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], InventoryController.prototype, "healthCheck", null);
+__decorate([
+    (0, common_1.Get)('health'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], InventoryController.prototype, "health", null);
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),
