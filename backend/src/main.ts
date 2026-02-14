@@ -11,14 +11,24 @@ async function bootstrap() {
     ? '/home/data/uploads' 
     : join(__dirname, '..', 'uploads');
   
-  if (!fs.existsSync(uploadsPath)) {
-    fs.mkdirSync(uploadsPath, { recursive: true });
+  try {
+    if (!fs.existsSync(uploadsPath)) {
+      fs.mkdirSync(uploadsPath, { recursive: true });
+      console.log(`Carpeta de uploads creada: ${uploadsPath}`);
+    }
+  } catch (err) {
+    console.error(`Error creando carpeta de uploads ${uploadsPath}:`, err.message);
   }
 
   if (process.env.NODE_ENV === 'production') {
     const dbPath = '/home/data';
-    if (!fs.existsSync(dbPath)) {
-      fs.mkdirSync(dbPath, { recursive: true });
+    try {
+      if (!fs.existsSync(dbPath)) {
+        fs.mkdirSync(dbPath, { recursive: true });
+        console.log(`Carpeta creada: ${dbPath}`);
+      }
+    } catch (err) {
+      console.error(`Error creando carpeta ${dbPath}:`, err.message);
     }
   } else {
     const devDataPath = join(__dirname, '..', 'data');

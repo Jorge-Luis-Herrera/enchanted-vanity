@@ -41,12 +41,13 @@ export class InventoryService implements OnModuleInit {
 
   // ─── Seed de datos inicial ───
   async onModuleInit() {
-    /*
-    const count = await this.shelfRepository.count();
-    if (count === 0) {
-      // ... (Rest of seed logic)
+    console.log('[DEBUG] InventoryService: Inicializando...');
+    try {
+      const count = await this.shelfRepository.count();
+      console.log(`[DEBUG] Conexión a BD exitosa. Estanterías encontradas: ${count}`);
+    } catch (err) {
+      console.error('[ERROO] Error de conexión a BD en onModuleInit:', err.message);
     }
-    */
   }
 
   // ─── Estanterías ───

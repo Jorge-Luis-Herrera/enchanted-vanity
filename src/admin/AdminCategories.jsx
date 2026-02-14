@@ -15,19 +15,30 @@ const AdminCategories = () => {
 
     const fetchData = () => {
         fetch(`${API_URL}/inventory`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Error cargando estanterías");
+                return res.json();
+            })
             .then(data => {
                 if (Array.isArray(data)) {
                     setShelves(data);
                     if (data.length > 0 && !newCategory.shelfId) {
                         setNewCategory(prev => ({ ...prev, shelfId: data[0].id }));
                     }
+                } else {
+                    setError("Error al cargar datos del servidor");
                 }
             })
-            .catch(err => console.error("Error cargando estanterías", err));
+            .catch(err => {
+                console.error("Error cargando estanterías", err);
+                setError("Error de conexión con la base de datos");
+            });
 
         fetch(`${API_URL}/inventory/categories`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Error cargando categorías");
+                return res.json();
+            })
             .then(data => {
                 if (Array.isArray(data)) setCategories(data);
                 else setCategories([]);

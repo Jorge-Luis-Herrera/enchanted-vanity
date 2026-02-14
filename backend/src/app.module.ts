@@ -26,7 +26,9 @@ const devDbPath = join(backendRoot, 'data', 'db.sqlite');
         ? '/home/data/db.sqlite' 
         : devDbPath,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: process.env.NODE_ENV !== 'production', // Desactivar en producción para evitar pérdida de datos
+      // Permitir forzar la sincronización en producción con una variable de entorno
+      synchronize: process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true',
+      logging: process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true',
     }),
     AuthModule,
     InventoryModule,

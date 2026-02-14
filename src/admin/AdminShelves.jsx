@@ -14,9 +14,22 @@ const AdminShelves = () => {
 
     const fetchShelves = () => {
         fetch(`${API_URL}/inventory`)
-            .then(res => res.json())
-            .then(data => setShelves(data))
-            .catch(err => console.error("Error cargando estanterías", err));
+            .then(res => {
+                if (!res.ok) throw new Error("Error en el servidor");
+                return res.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    setShelves(data);
+                } else {
+                    console.error("Respuesta inesperada:", data);
+                    setError("Error al cargar las estanterías: respuesta no válida.");
+                }
+            })
+            .catch(err => {
+                console.error("Error cargando estanterías", err);
+                setError("No se pudo conectar con el servidor.");
+            });
     };
 
     const handleCreateShelf = (e) => {

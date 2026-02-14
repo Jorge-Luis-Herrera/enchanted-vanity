@@ -25,14 +25,27 @@ const AdminProducts = () => {
 
     const fetchData = () => {
         fetch(`${API_URL}/inventory/categories`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Error cargando categorías");
+                return res.json();
+            })
             .then(data => { if (Array.isArray(data)) setCategories(data); })
-            .catch(err => console.error("Error cargando categorías", err));
+            .catch(err => {
+                console.error("Error cargando categorías", err);
+                setError("Error al cargar categorías");
+            });
 
         fetch(`${API_URL}/inventory/products`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("Error cargando productos");
+                return res.json();
+            })
             .then(data => { if (Array.isArray(data)) setProducts(data); else setProducts([]); })
-            .catch(err => { console.error("Error cargando productos", err); setProducts([]); });
+            .catch(err => { 
+                console.error("Error cargando productos", err); 
+                setProducts([]); 
+                setError("Error al cargar productos");
+            });
     };
 
     const handleFileChange = (e) => {
