@@ -73,6 +73,6 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'enchanted-vanity' # Asegúrate que este sea el nombre correcto en Azure
+          app-name: 'enchanted-vanity'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
