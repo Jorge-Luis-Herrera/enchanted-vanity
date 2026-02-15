@@ -15,107 +15,50 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryController = void 0;
 const common_1 = require("@nestjs/common");
 const inventory_service_1 = require("./inventory.service");
-const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
-const platform_express_1 = require("@nestjs/platform-express");
-const multer_1 = require("multer");
-const path_1 = require("path");
-const create_product_dto_1 = require("./dto/create-product.dto");
-const update_product_dto_1 = require("./dto/update-product.dto");
-const multerConfig = {
-    storage: (0, multer_1.diskStorage)({
-        destination: (req, file, cb) => {
-            const dest = process.env.NODE_ENV === 'production'
-                ? '/home/data/uploads'
-                : (0, path_1.join)(__dirname, '..', '..', 'uploads');
-            cb(null, dest);
-        },
-        filename: (req, file, cb) => {
-            const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-            return cb(null, `${randomName}${(0, path_1.extname)(file.originalname)}`);
-        }
-    })
-};
 let InventoryController = class InventoryController {
-    inventoryService;
     constructor(inventoryService) {
         this.inventoryService = inventoryService;
     }
-    async healthCheck() {
-        const result = {
-            status: 'ok',
-            timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || 'not set',
-            dbSync: process.env.DB_SYNC || 'not set',
-            nodeVersion: process.version,
-            port: process.env.PORT || '3000 (default)',
-            cwd: process.cwd(),
-        };
-        try {
-            const shelves = await this.inventoryService.getInventario();
-            result.database = 'connected';
-            result.shelfCount = shelves.length;
-        }
-        catch (err) {
-            result.status = 'error';
-            result.database = 'failed';
-            result.dbError = err.message;
-            result.dbErrorStack = err.stack?.split('\n').slice(0, 5);
-        }
-        return result;
+    healthCheck() {
+        return { status: 'ok', environment: process.env.NODE_ENV || 'development' };
     }
-    async findAll() {
+    findAll() {
         return this.inventoryService.getInventario();
     }
-    async createShelf(body) {
+    createShelf(body) {
         return this.inventoryService.createShelf(body.titulo);
     }
-    async deleteShelf(id) {
+    deleteShelf(id) {
         return this.inventoryService.deleteShelf(id);
     }
-    async findAllCategories() {
+    findAllCategories() {
         return this.inventoryService.getAllCategories();
     }
-    async createCategory(file, body) {
-        const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
-        return this.inventoryService.createCategory(body.nombre, parseInt(body.shelfId), imagenUrl);
+    createCategory(body) {
+        return this.inventoryService.createCategory(body.nombre, body.shelfId, body.imagenUrl);
     }
-    async deleteCategory(id) {
+    deleteCategory(id) {
         return this.inventoryService.deleteCategory(id);
     }
-    async getCategoryProducts(id) {
-        return this.inventoryService.getCategoryProducts(id);
+    findProductsByCategory(id) {
+        return this.inventoryService.getProductsByCategory(id);
     }
-    async assignProductsToCategory(id, body) {
-        return this.inventoryService.assignProductsToCategory(id, body.productIds);
-    }
-    async findAllProducts() {
+    findAllProducts() {
         return this.inventoryService.getAllProducts();
     }
-    async findFeaturedProducts() {
+    findFeaturedProducts() {
         return this.inventoryService.getFeaturedProducts();
     }
-    async seedTestProducts() {
-        return this.inventoryService.seedTestProducts();
+    createProduct(body) {
+        return this.inventoryService.createProduct(body);
     }
-    async createProduct(file, body) {
-        const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
-        const categoryIds = typeof body.categoryIds === 'string'
-            ? JSON.parse(body.categoryIds)
-            : (body.categoryIds || []);
-        return this.inventoryService.createProduct(body.nombre, body.cantidad, body.precio, categoryIds, imagenUrl, body.esCombo, body.esOferta);
+    updateProduct(id, body) {
+        return this.inventoryService.updateProduct(id, body);
     }
-    async updateProduct(id, file, body) {
-        const data = { ...body };
-        if (typeof body.categoryIds === 'string')
-            data.categoryIds = JSON.parse(body.categoryIds);
-        if (file)
-            data.imagenUrl = `/uploads/${file.filename}`;
-        return this.inventoryService.updateProduct(id, data);
-    }
-    async deleteProduct(id) {
+    deleteProduct(id) {
         return this.inventoryService.deleteProduct(id);
     }
-    async updateStock(id, body) {
+    updateStock(id, body) {
         return this.inventoryService.updateStock(id, body.cantidad);
     }
 };
@@ -124,125 +67,96 @@ __decorate([
     (0, common_1.Get)('health'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "healthCheck", null);
 __decorate([
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Post)('shelf'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "createShelf", null);
 __decorate([
     (0, common_1.Delete)('shelf/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "deleteShelf", null);
 __decorate([
     (0, common_1.Get)('categories'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "findAllCategories", null);
 __decorate([
     (0, common_1.Post)('category'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imagen', multerConfig)),
-    __param(0, (0, common_1.UploadedFile)()),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "createCategory", null);
 __decorate([
     (0, common_1.Delete)('category/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "deleteCategory", null);
 __decorate([
     (0, common_1.Get)('category/:id/products'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", Promise)
-], InventoryController.prototype, "getCategoryProducts", null);
-__decorate([
-    (0, common_1.Post)('category/:id/products'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
-    __param(1, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object]),
-    __metadata("design:returntype", Promise)
-], InventoryController.prototype, "assignProductsToCategory", null);
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "findProductsByCategory", null);
 __decorate([
     (0, common_1.Get)('products'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "findAllProducts", null);
 __decorate([
     (0, common_1.Get)('featured'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "findFeaturedProducts", null);
 __decorate([
-    (0, common_1.Post)('seed-test-products'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], InventoryController.prototype, "seedTestProducts", null);
-__decorate([
     (0, common_1.Post)('product'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imagen', multerConfig)),
-    __param(0, (0, common_1.UploadedFile)()),
-    __param(1, (0, common_1.Body)()),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, create_product_dto_1.CreateProductDto]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "createProduct", null);
 __decorate([
     (0, common_1.Patch)('product/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('imagen', multerConfig)),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
-    __param(1, (0, common_1.UploadedFile)()),
-    __param(2, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Object, update_product_dto_1.UpdateProductDto]),
-    __metadata("design:returntype", Promise)
-], InventoryController.prototype, "updateProduct", null);
-__decorate([
-    (0, common_1.Delete)('product/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", Promise)
-], InventoryController.prototype, "deleteProduct", null);
-__decorate([
-    (0, common_1.Patch)('product/:id/stock'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "updateProduct", null);
+__decorate([
+    (0, common_1.Delete)('product/:id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "deleteProduct", null);
+__decorate([
+    (0, common_1.Patch)('product/:id/stock'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "updateStock", null);
 exports.InventoryController = InventoryController = __decorate([
     (0, common_1.Controller)('inventory'),

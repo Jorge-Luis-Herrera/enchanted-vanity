@@ -2,16 +2,9 @@ import { AuthService } from './auth.service';
 export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
-    login(body: {
-        usuario: string;
-        password: string;
-    }): Promise<{
-        ok: boolean;
-        message: string;
-    } | {
+    login(body: any): Promise<{
         access_token: string;
-        usuario: string;
+        usuario: any;
         ok: boolean;
-        message?: undefined;
     }>;
 }

@@ -79,7 +79,14 @@ const AdminProducts = () => {
         setPreviewUrl(null);
     };
 
-    const handleSubmit = (e) => {
+    const fileToBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         const nombreTrim = formData.nombre.trim();
@@ -98,21 +105,38 @@ const AdminProducts = () => {
             return;
         }
 
-        const fd = new FormData();
-        fd.append("nombre", nombreTrim);
-        fd.append("cantidad", cantidad.toString());
-        fd.append("precio", precio.toString());
-        fd.append("categoryIds", JSON.stringify(formData.categoryIds));
-        fd.append("esCombo", formData.esCombo.toString());
-        fd.append("esOferta", formData.esOferta.toString());
-        if (selectedFile) fd.append("imagen", selectedFile);
+        let base64Image = null;
+        if (selectedFile) {
+            try {
+                base64Image = await fileToBase64(selectedFile);
+            } catch (err) {
+                console.error("Error convirtiendo imagen", err);
+            }
+        }
 
-        const url = editingId 
-            ? `${API_URL}/inventory/product/${editingId}` 
+        const payload = {
+            nombre: nombreTrim,
+            cantidad,
+            precio,
+            categoryIds: formData.categoryIds,
+            esCombo: formData.esCombo,
+            esOferta: formData.esOferta,
+            imagenUrl: base64Image || (editingId ? products.find(p => p.id === editingId)?.imagenUrl : null)
+        };
+
+        const url = editingId
+            ? `${API_URL}/inventory/product/${editingId}`
             : `${API_URL}/inventory/product`;
         const method = editingId ? "PATCH" : "POST";
 
-        fetch(url, { method, headers: getAuthHeaders(), body: fd })
+        fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify(payload)
+        })
             .then(() => {
                 setError("");
                 handleCancelEdit();
@@ -136,8 +160,8 @@ const AdminProducts = () => {
             headers: { "Content-Type": "application/json", ...getAuthHeaders() },
             body: JSON.stringify({ cantidad: newStock })
         })
-        .then(() => fetchData())
-        .catch(err => console.error("Error actualizando stock", err));
+            .then(() => fetchData())
+            .catch(err => console.error("Error actualizando stock", err));
     };
 
     return (
@@ -150,28 +174,28 @@ const AdminProducts = () => {
                 <div className="form-grid">
                     <div className="field">
                         <label>Nombre del Producto</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={formData.nombre}
-                            onChange={(e) => { setFormData({...formData, nombre: e.target.value}); setError(""); }}
-                            required 
+                            onChange={(e) => { setFormData({ ...formData, nombre: e.target.value }); setError(""); }}
+                            required
                         />
                     </div>
                     <div className="field">
                         <label>Stock Inicial</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             value={formData.cantidad}
-                            onChange={(e) => { setFormData({...formData, cantidad: parseInt(e.target.value, 10) || 0}); setError(""); }}
+                            onChange={(e) => { setFormData({ ...formData, cantidad: parseInt(e.target.value, 10) || 0 }); setError(""); }}
                         />
                     </div>
                     <div className="field">
                         <label>Precio ($)</label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             step="0.01"
                             value={formData.precio}
-                            onChange={(e) => { setFormData({...formData, precio: parseFloat(e.target.value) || 0}); setError(""); }}
+                            onChange={(e) => { setFormData({ ...formData, precio: parseFloat(e.target.value) || 0 }); setError(""); }}
                         />
                     </div>
                 </div>
@@ -182,7 +206,7 @@ const AdminProducts = () => {
                     <div className="category-checkboxes">
                         {categories.map(cat => (
                             <label key={cat.id} className="checkbox-label">
-                                <input 
+                                <input
                                     type="checkbox"
                                     checked={formData.categoryIds.includes(cat.id)}
                                     onChange={() => handleCategoryToggle(cat.id)}
@@ -197,18 +221,18 @@ const AdminProducts = () => {
                 {/* Toggles Combo / Oferta */}
                 <div className="specialization-toggles">
                     <label className="toggle-label">
-                        <input 
+                        <input
                             type="checkbox"
                             checked={formData.esCombo}
-                            onChange={(e) => setFormData({...formData, esCombo: e.target.checked})}
+                            onChange={(e) => setFormData({ ...formData, esCombo: e.target.checked })}
                         />
                         <span className="toggle-text combo">Es Combo</span>
                     </label>
                     <label className="toggle-label">
-                        <input 
+                        <input
                             type="checkbox"
                             checked={formData.esOferta}
-                            onChange={(e) => setFormData({...formData, esOferta: e.target.checked})}
+                            onChange={(e) => setFormData({ ...formData, esOferta: e.target.checked })}
                         />
                         <span className="toggle-text oferta">Es Oferta</span>
                     </label>
@@ -261,9 +285,9 @@ const AdminProducts = () => {
                             <tr key={product.id}>
                                 <td>
                                     {product.imagenUrl ? (
-                                        <img 
-                                            src={`${STATIC_URL}${product.imagenUrl}`} 
-                                            alt="thumb" 
+                                        <img
+                                            src={`${STATIC_URL}${product.imagenUrl}`}
+                                            alt="thumb"
                                             style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }}
                                         />
                                     ) : (
@@ -273,12 +297,12 @@ const AdminProducts = () => {
                                 <td>{product.nombre}</td>
                                 <td>
                                     <div className="stock-controls">
-                                        <button 
+                                        <button
                                             className="stock-btn"
                                             onClick={() => handleUpdateStock(product.id, product.cantidad, -1)}
                                         >-</button>
                                         <span className="stock-value">{product.cantidad}</span>
-                                        <button 
+                                        <button
                                             className="stock-btn"
                                             onClick={() => handleUpdateStock(product.id, product.cantidad, 1)}
                                         >+</button>

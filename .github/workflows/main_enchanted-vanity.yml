@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy Node.js app to Azure Web App - Enchanted-Vanity
+name: Build and deploy Node.js app to Azure Web App - enchanted-vanity
 
 on:
   push:
@@ -12,8 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -22,56 +17,62 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+          cache: 'npm'
 
-      - name: Build project (Frontend + Backend)
+      - name: Install Frontend Dependencies
+        run: npm install
+
+      - name: Build Frontend
+        run: npm run build
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Build Backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Prepare Deployment Package
         run: |
-          # 1. Instalar y construir Frontend
-          npm install
-          npm run build
-          
-          # 2. Instalar y construir Backend
-          cd backend
-          npm install
-          npm run build
-          
-          # 3. Mover Frontend al Backend
-          mkdir -p client
-          cp -r ../dist/* ./client/
-          
-          # 4. Limpiar para que el paquete sea ligero
-          rm -rf src test
+          mkdir -p deploy
+          cp -r backend/dist deploy/
+          cp -r backend/node_modules deploy/
+          cp backend/package.json deploy/
+          cp -r dist deploy/client
+          # Crear carpeta data vacía si es necesario (aunque Azure usará persistente)
+          mkdir -p deploy/data
+
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+        working-directory: ./deploy
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: ./backend
+          path: deploy/release.zip
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_494F74EC273D484DAA370E449FA9E181 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_1AA41CA2ECC8433D9D624F9045F5DAC8 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6C492CC03FF442C4AAF8D5CF0F58B983 }}
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip && rm release.zip
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'Enchanted-Vanity'
-          slot-name: 'Production'
+          app-name: 'enchanted-vanity' # Asegúrate que este sea el nombre correcto en Azure
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: .
-          

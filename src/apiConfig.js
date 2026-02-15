@@ -4,4 +4,4 @@
 const isProd = import.meta.env.PROD;
 
 export const API_URL = '/api';
-export const STATIC_URL = isProd ? '' : '';
+export const STATIC_URL = '/uploads/';

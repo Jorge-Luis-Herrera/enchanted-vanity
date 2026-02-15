@@ -39,25 +39,17 @@ const path_1 = require("path");
 const fs = __importStar(require("fs"));
 const common_1 = require("@nestjs/common");
 async function bootstrap() {
+    const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const bodyLimit = '5mb';
+    const express = require('express');
+    app.use(express.json({ limit: bodyLimit }));
+    app.use(express.urlencoded({ limit: bodyLimit, extended: true }));
     const uploadsPath = process.env.NODE_ENV === 'production'
         ? '/home/data/uploads'
-        : (0, path_1.join)(__dirname, '..', 'uploads');
+        : (0, path_1.join)(process.cwd(), 'uploads');
     if (!fs.existsSync(uploadsPath)) {
         fs.mkdirSync(uploadsPath, { recursive: true });
     }
-    if (process.env.NODE_ENV === 'production') {
-        const dbPath = '/home/data';
-        if (!fs.existsSync(dbPath)) {
-            fs.mkdirSync(dbPath, { recursive: true });
-        }
-    }
-    else {
-        const devDataPath = (0, path_1.join)(__dirname, '..', 'data');
-        if (!fs.existsSync(devDataPath)) {
-            fs.mkdirSync(devDataPath, { recursive: true });
-        }
-    }
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
@@ -71,17 +63,11 @@ async function bootstrap() {
     const port = process.env.PORT || 3000;
     try {
         await app.listen(port);
-        console.log(`Servidor corriendo en el puerto: ${port}`);
+        console.log(`🚀 Servidor minimalista listo en puerto: ${port}`);
     }
     catch (err) {
-        if (err.code === 'EADDRINUSE') {
-            console.error(`Error: El puerto ${port} ya está en uso. Intenta cerrarlo o usar otro puerto.`);
-            process.exit(1);
-        }
-        else {
-            console.error('Error al iniciar el servidor:', err);
-            process.exit(1);
-        }
+        console.error('❌ Error fatal al arrancar:', err);
+        process.exit(1);
     }
 }
 bootstrap();

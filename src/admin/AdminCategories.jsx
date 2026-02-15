@@ -55,7 +55,14 @@ const AdminCategories = () => {
         }
     };
 
-    const handleCreate = (e) => {
+    const fileToBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
+    const handleCreate = async (e) => {
         e.preventDefault();
         setError("");
         const nombreTrim = newCategory.nombre.trim();
@@ -72,25 +79,38 @@ const AdminCategories = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append("nombre", nombreTrim);
-        formData.append("shelfId", newCategory.shelfId.toString());
-        if (selectedFile) formData.append("imagen", selectedFile);
+        let base64Image = null;
+        if (selectedFile) {
+            try {
+                base64Image = await fileToBase64(selectedFile);
+            } catch (err) {
+                console.error("Error convirtiendo imagen", err);
+            }
+        }
+
+        const payload = {
+            nombre: nombreTrim,
+            shelfId: parseInt(newCategory.shelfId, 10),
+            imagenUrl: base64Image
+        };
 
         fetch(`${API_URL}/inventory/category`, {
             method: "POST",
-            headers: getAuthHeaders(),
-            body: formData
+            headers: {
+                "Content-Type": "application/json",
+                ...getAuthHeaders()
+            },
+            body: JSON.stringify(payload)
         })
-        .then(() => {
-            setNewCategory({ nombre: "", shelfId: shelves[0]?.id || "" });
-            setSelectedFile(null);
-            setPreviewUrl(null);
-            setError("");
-            fetchData();
-            alert("Categoría creada correctamente");
-        })
-        .catch(err => console.error("Error creando categoría", err));
+            .then(() => {
+                setNewCategory({ nombre: "", shelfId: shelves[0]?.id || "" });
+                setSelectedFile(null);
+                setPreviewUrl(null);
+                setError("");
+                fetchData();
+                alert("Categoría creada correctamente");
+            })
+            .catch(err => console.error("Error creando categoría", err));
     };
 
     const handleDelete = (id) => {
@@ -110,18 +130,18 @@ const AdminCategories = () => {
                 <div className="form-grid">
                     <div className="field">
                         <label>Nombre de la Categoría</label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={newCategory.nombre}
-                            onChange={(e) => { setNewCategory({...newCategory, nombre: e.target.value}); setError(""); }}
-                            required 
+                            onChange={(e) => { setNewCategory({ ...newCategory, nombre: e.target.value }); setError(""); }}
+                            required
                         />
                     </div>
                     <div className="field">
                         <label>Estantería</label>
-                        <select 
+                        <select
                             value={newCategory.shelfId}
-                            onChange={(e) => { setNewCategory({...newCategory, shelfId: e.target.value}); setError(""); }}
+                            onChange={(e) => { setNewCategory({ ...newCategory, shelfId: e.target.value }); setError(""); }}
                             className={error && !newCategory.shelfId ? "input-error" : ""}
                         >
                             <option value="">Seleccione estantería</option>
@@ -167,9 +187,9 @@ const AdminCategories = () => {
                             <tr key={cat.id}>
                                 <td>
                                     {cat.imagenUrl ? (
-                                        <img 
-                                            src={`${STATIC_URL}${cat.imagenUrl}`} 
-                                            alt="thumb" 
+                                        <img
+                                            src={`${STATIC_URL}${cat.imagenUrl}`}
+                                            alt="thumb"
                                             style={{ width: '40px', height: '40px', borderRadius: '4px', objectFit: 'cover' }}
                                         />
                                     ) : (

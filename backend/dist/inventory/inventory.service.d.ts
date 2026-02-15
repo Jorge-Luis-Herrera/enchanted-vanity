@@ -1,36 +1,32 @@
-import { OnModuleInit } from "@nestjs/common";
-import { Repository } from "typeorm";
-import { Product } from "./entities/product.entity";
-import { Shelf } from "./entities/shelf.entity";
-import { Category } from "./entities/category.entity";
+import { OnModuleInit } from '@nestjs/common';
 export declare class InventoryService implements OnModuleInit {
-    private productRepository;
-    private shelfRepository;
-    private categoryRepository;
-    constructor(productRepository: Repository<Product>, shelfRepository: Repository<Shelf>, categoryRepository: Repository<Category>);
-    private deleteFile;
-    onModuleInit(): Promise<void>;
-    getInventario(): Promise<Shelf[]>;
-    createShelf(titulo: string): Promise<Shelf>;
+    private readonly dbPath;
+    onModuleInit(): void;
+    private ensureDbStructure;
+    private getData;
+    private saveData;
+    private saveImage;
+    getInventario(): Promise<any>;
+    createShelf(titulo: string): Promise<{
+        id: number;
+        titulo: string;
+        categorias: any[];
+    }>;
     deleteShelf(id: number): Promise<void>;
-    getAllCategories(): Promise<Category[]>;
-    createCategory(nombre: string, shelfId: number, imagenUrl?: string): Promise<Category>;
+    getAllCategories(): Promise<any>;
+    createCategory(nombre: string, shelfId: number, imagenUrl?: string): Promise<{
+        id: number;
+        nombre: string;
+        shelfId: number;
+        imagenUrl: string;
+        productos: any[];
+    }>;
     deleteCategory(id: number): Promise<void>;
-    getCategoryProducts(categoryId: number): Promise<Product[]>;
-    assignProductsToCategory(categoryId: number, productIds: number[]): Promise<Category>;
-    getAllProducts(): Promise<Product[]>;
-    getFeaturedProducts(): Promise<Product[]>;
-    createProduct(nombre: string, cantidad: number, precio: number, categoryIds: number[], imagenUrl?: string, esCombo?: boolean, esOferta?: boolean): Promise<Product>;
-    updateProduct(id: number, data: {
-        nombre?: string;
-        cantidad?: number;
-        precio?: number;
-        imagenUrl?: string;
-        esCombo?: boolean;
-        esOferta?: boolean;
-        categoryIds?: number[];
-    }): Promise<Product>;
+    getProductsByCategory(categoryId: number): Promise<any>;
+    getAllProducts(): Promise<any>;
+    getFeaturedProducts(): Promise<any>;
+    createProduct(productData: any): Promise<any>;
+    updateProduct(id: number, updateData: any): Promise<any>;
     deleteProduct(id: number): Promise<void>;
-    seedTestProducts(): Promise<Product[]>;
-    updateStock(id: number, cantidad: number): Promise<Product>;
+    updateStock(id: number, cantidad: number): Promise<any>;
 }

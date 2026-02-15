@@ -36,23 +36,17 @@ const Login = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ usuario: usuarioTrim, password }),
             });
-            const text = await res.text();
-            let data;
-            try {
-                data = text ? JSON.parse(text) : {};
-            } catch {
-                setError("Error en el servidor. Verifique que el backend esté corriendo en el puerto 3000.");
-                return;
-            }
-            if (data.ok && data.access_token) {
-                setToken(data.access_token);
+            const data = await res.json();
+            
+            if (data.ok) {
+                setToken(true);
                 alert("Acceso autorizado. Bienvenido al Panel de Control.");
                 navigate("/admin/estanterias");
             } else {
                 setError(data.message || "Credenciales incorrectas. Verifique sus datos.");
             }
         } catch (err) {
-            setError("Error de conexión. Asegúrese de que el backend esté activo (cd backend && npm run start:dev).");
+            setError("Error de conexión. Asegúrese de que el backend esté activo.");
         } finally {
             setLoading(false);
         }

@@ -1,42 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly jwtService: JwtService) {}
+  async validateUser(username: string, pass: string): Promise<any> {
+    const adminUser = process.env.ADMIN_USER || 'admin';
+    const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
 
-  async validateUser(usuario: string, password: string): Promise<{ usuario: string } | null> {
-    const validUsuario = (process.env.ADMIN_USER || 'admin').toLowerCase();
-    const validPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-    const defaultPassword = process.env.ADMIN_PASSWORD || 'admin123';
-
-    if (usuario.toLowerCase() !== validUsuario) {
-      return null;
+    if (username === adminUser && pass === adminPass) {
+      return { username };
     }
-
-    // Si hay un hash configurado, comparamos con bcrypt
-    if (validPasswordHash) {
-      const isMatch = await bcrypt.compare(password, validPasswordHash);
-      if (isMatch) return { usuario: usuario.toLowerCase() };
-    } else {
-      // Si no hay hash (dev), comparamos texto plano
-      if (password === defaultPassword) {
-        return { usuario: usuario.toLowerCase() };
-      }
-    }
-
     return null;
   }
 
-  async login(usuario: string, password: string) {
-    const user = await this.validateUser(usuario, password);
-    if (!user) {
-      return null;
-    }
+  async login(user: any) {
     return {
-      access_token: this.jwtService.sign({ sub: user.usuario }),
-      usuario: user.usuario,
+      access_token: 'simple-persistent-token', // Dummy token for simple logic
+      usuario: user.username,
+      ok: true
     };
   }
 }

@@ -1,188 +1,94 @@
-import { Controller, Get, Post, Body, Delete, Param, UseInterceptors, UploadedFile, Patch, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Delete,
+  Param,
+  Patch,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { InventoryService } from './inventory.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { Shelf } from './entities/shelf.entity';
-import { Product } from './entities/product.entity';
-import { Category } from './entities/category.entity';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-
-// Helper para la configuración de Multer
-const multerConfig = {
-  storage: diskStorage({
-    destination: (req, file, cb) => {
-      const dest = process.env.NODE_ENV === 'production'
-        ? '/home/data/uploads'
-        : join(__dirname, '..', '..', 'uploads');
-      cb(null, dest);
-    },
-    filename: (req, file, cb) => {
-      const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
-      return cb(null, `${randomName}${extname(file.originalname)}`);
-    }
-  })
-};
 
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) { }
 
-  // ─── Diagnóstico ───
   @Get('health')
-  async healthCheck() {
-    const result: any = {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'not set',
-      dbSync: process.env.DB_SYNC || 'not set',
-      nodeVersion: process.version,
-      port: process.env.PORT || '3000 (default)',
-      cwd: process.cwd(),
-    };
-
-    try {
-      const shelves = await this.inventoryService.getInventario();
-      result.database = 'connected';
-      result.shelfCount = shelves.length;
-    } catch (err) {
-      result.status = 'error';
-      result.database = 'failed';
-      result.dbError = err.message;
-      result.dbErrorStack = err.stack?.split('\n').slice(0, 5);
-    }
-
-    return result;
+  healthCheck() {
+    return { status: 'ok', environment: process.env.NODE_ENV || 'development' };
   }
 
-  // ─── Estanterías ───
   @Get()
-  async findAll(): Promise<Shelf[]> {
+  findAll() {
     return this.inventoryService.getInventario();
   }
 
   @Post('shelf')
-  @UseGuards(JwtAuthGuard)
-  async createShelf(@Body() body: { titulo: string }): Promise<Shelf> {
+  createShelf(@Body() body: { titulo: string }) {
     return this.inventoryService.createShelf(body.titulo);
   }
 
   @Delete('shelf/:id')
-  @UseGuards(JwtAuthGuard)
-  async deleteShelf(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  deleteShelf(@Param('id', ParseIntPipe) id: number) {
     return this.inventoryService.deleteShelf(id);
   }
 
-  // ─── Categorías ───
   @Get('categories')
-  async findAllCategories(): Promise<Category[]> {
+  findAllCategories() {
     return this.inventoryService.getAllCategories();
   }
 
   @Post('category')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('imagen', multerConfig))
-  async createCategory(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() body: { nombre: string; shelfId: string }
-  ): Promise<Category> {
-    const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
+  createCategory(@Body() body: any) {
     return this.inventoryService.createCategory(
       body.nombre,
-      parseInt(body.shelfId),
-      imagenUrl
+      body.shelfId,
+      body.imagenUrl,
     );
   }
 
   @Delete('category/:id')
-  @UseGuards(JwtAuthGuard)
-  async deleteCategory(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  deleteCategory(@Param('id', ParseIntPipe) id: number) {
     return this.inventoryService.deleteCategory(id);
   }
 
   @Get('category/:id/products')
-  async getCategoryProducts(@Param('id', ParseIntPipe) id: number): Promise<Product[]> {
-    return this.inventoryService.getCategoryProducts(id);
+  findProductsByCategory(@Param('id', ParseIntPipe) id: number) {
+    return this.inventoryService.getProductsByCategory(id);
   }
 
-  @Post('category/:id/products')
-  @UseGuards(JwtAuthGuard)
-  async assignProductsToCategory(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: { productIds: number[] }
-  ): Promise<Category> {
-    return this.inventoryService.assignProductsToCategory(id, body.productIds);
-  }
-
-  // ─── Productos ───
   @Get('products')
-  async findAllProducts(): Promise<Product[]> {
+  findAllProducts() {
     return this.inventoryService.getAllProducts();
   }
 
   @Get('featured')
-  async findFeaturedProducts(): Promise<Product[]> {
+  findFeaturedProducts() {
     return this.inventoryService.getFeaturedProducts();
   }
 
-  @Post('seed-test-products')
-  async seedTestProducts(): Promise<Product[]> {
-    return this.inventoryService.seedTestProducts();
-  }
-
   @Post('product')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('imagen', multerConfig))
-  async createProduct(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() body: CreateProductDto
-  ): Promise<Product> {
-    const imagenUrl = file ? `/uploads/${file.filename}` : undefined;
-
-    const categoryIds = typeof body.categoryIds === 'string'
-      ? JSON.parse(body.categoryIds)
-      : (body.categoryIds || []);
-
-    return this.inventoryService.createProduct(
-      body.nombre,
-      body.cantidad,
-      body.precio,
-      categoryIds,
-      imagenUrl,
-      body.esCombo,
-      body.esOferta,
-    );
+  createProduct(@Body() body: any) {
+    return this.inventoryService.createProduct(body);
   }
 
   @Patch('product/:id')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('imagen', multerConfig))
-  async updateProduct(
-    @Param('id', ParseIntPipe) id: number,
-    @UploadedFile() file: Express.Multer.File,
-    @Body() body: UpdateProductDto
-  ): Promise<Product> {
-    const data: any = { ...body };
-    if (typeof body.categoryIds === 'string') data.categoryIds = JSON.parse(body.categoryIds);
-    if (file) data.imagenUrl = `/uploads/${file.filename}`;
-
-    return this.inventoryService.updateProduct(id, data);
+  updateProduct(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
+    return this.inventoryService.updateProduct(id, body);
   }
 
   @Delete('product/:id')
-  @UseGuards(JwtAuthGuard)
-  async deleteProduct(@Param('id', ParseIntPipe) id: number): Promise<void> {
+  deleteProduct(@Param('id', ParseIntPipe) id: number) {
     return this.inventoryService.deleteProduct(id);
   }
 
   @Patch('product/:id/stock')
-  @UseGuards(JwtAuthGuard)
-  async updateStock(
+  updateStock(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { cantidad: number }
-  ): Promise<Product> {
+    @Body() body: { cantidad: number },
+  ) {
     return this.inventoryService.updateStock(id, body.cantidad);
   }
 }

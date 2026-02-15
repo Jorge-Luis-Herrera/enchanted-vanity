@@ -1,35 +1,36 @@
 import { InventoryService } from './inventory.service';
-import { Shelf } from './entities/shelf.entity';
-import { Product } from './entities/product.entity';
-import { Category } from './entities/category.entity';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 export declare class InventoryController {
     private readonly inventoryService;
     constructor(inventoryService: InventoryService);
-    healthCheck(): Promise<any>;
-    findAll(): Promise<Shelf[]>;
+    healthCheck(): {
+        status: string;
+        environment: string;
+    };
+    findAll(): Promise<any>;
     createShelf(body: {
         titulo: string;
-    }): Promise<Shelf>;
+    }): Promise<{
+        id: number;
+        titulo: string;
+        categorias: any[];
+    }>;
     deleteShelf(id: number): Promise<void>;
-    findAllCategories(): Promise<Category[]>;
-    createCategory(file: Express.Multer.File, body: {
+    findAllCategories(): Promise<any>;
+    createCategory(body: any): Promise<{
+        id: number;
         nombre: string;
-        shelfId: string;
-    }): Promise<Category>;
+        shelfId: number;
+        imagenUrl: string;
+        productos: any[];
+    }>;
     deleteCategory(id: number): Promise<void>;
-    getCategoryProducts(id: number): Promise<Product[]>;
-    assignProductsToCategory(id: number, body: {
-        productIds: number[];
-    }): Promise<Category>;
-    findAllProducts(): Promise<Product[]>;
-    findFeaturedProducts(): Promise<Product[]>;
-    seedTestProducts(): Promise<Product[]>;
-    createProduct(file: Express.Multer.File, body: CreateProductDto): Promise<Product>;
-    updateProduct(id: number, file: Express.Multer.File, body: UpdateProductDto): Promise<Product>;
+    findProductsByCategory(id: number): Promise<any>;
+    findAllProducts(): Promise<any>;
+    findFeaturedProducts(): Promise<any>;
+    createProduct(body: any): Promise<any>;
+    updateProduct(id: number, body: any): Promise<any>;
     deleteProduct(id: number): Promise<void>;
     updateStock(id: number, body: {
         cantidad: number;
-    }): Promise<Product>;
+    }): Promise<any>;
 }

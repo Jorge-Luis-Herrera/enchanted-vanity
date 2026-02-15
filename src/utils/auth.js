@@ -1,18 +1,17 @@
-const TOKEN_KEY = 'bv_admin_token';
+const ADMIN_KEY = 'bv_is_admin';
 
 export function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
+    return localStorage.getItem(ADMIN_KEY) === 'true' ? 'admin' : null;
 }
 
-export function setToken(token) {
-    localStorage.setItem(TOKEN_KEY, token);
+export function setToken(val) {
+    localStorage.setItem(ADMIN_KEY, val ? 'true' : 'false');
 }
 
 export function clearToken() {
-    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ADMIN_KEY);
 }
 
 export function getAuthHeaders() {
-    const token = getToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return {}; // No longer using Bearer tokens for this simple implementation
 }

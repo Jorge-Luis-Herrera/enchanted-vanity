@@ -1,40 +1,24 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ConfigModule } from '@nestjs/config';
 import { join } from 'path';
 import { InventoryModule } from './inventory/inventory.module';
 import { AuthModule } from './auth/auth.module';
-import { Product } from './inventory/entities/product.entity';
-import { Category } from './inventory/entities/category.entity';
-import { Shelf } from './inventory/entities/shelf.entity';
 
-const backendRoot = join(__dirname, '..');
-const devDbPath = join(backendRoot, 'data', 'db.sqlite');
 
 @Module({
   imports: [
-    // Servir el frontend compilado
+    ConfigModule.forRoot({ isGlobal: true }),
+    // Frontend estático
     ServeStaticModule.forRoot({
-      rootPath: process.env.NODE_ENV === 'production'
-        ? join(__dirname, '..', 'client')  // Azure (segun el workflow)
-        : join(__dirname, '..', '..', 'dist'), // Local
-      exclude: ['/api{/*path}'],
-      serveStaticOptions: {
-        cacheControl: true,
-      },
-    }),
-    // Configuración de la base de datos
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      // En Azure/Producción usamos carpeta persistente montada; en dev, ruta fija
-      database: process.env.NODE_ENV === 'production' 
-        ? '/home/data/db.sqlite' 
-        : devDbPath,
-      entities: [Product, Category, Shelf],
-      synchronize: true, // TEMPORAL: forzar creación de tablas en Azure. Cambiar a false después del primer despliegue exitoso.
+      rootPath:
+        process.env.NODE_ENV === 'production'
+          ? join(__dirname, '..', 'client')
+          : join(__dirname, '..', '..', 'dist'),
+      exclude: ['/api/:path*', '/uploads/:path*'],
     }),
     AuthModule,
     InventoryModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

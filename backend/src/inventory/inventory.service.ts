@@ -1,292 +1,202 @@
-import { Injectable, OnModuleInit, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, In } from "typeorm";
-import { Product } from "./entities/product.entity";
-import { Shelf } from "./entities/shelf.entity";
-import { Category } from "./entities/category.entity";
+import { Injectable, OnModuleInit, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs';
-import { join } from 'path';
+import * as path from 'path';
 
 @Injectable()
 export class InventoryService implements OnModuleInit {
-  constructor(
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>,
-    @InjectRepository(Shelf)
-    private shelfRepository: Repository<Shelf>,
-    @InjectRepository(Category)
-    private categoryRepository: Repository<Category>,
-  ) {}
+  private readonly dbPath = process.env.NODE_ENV === 'production'
+    ? '/home/data/db.json'
+    : path.join(process.cwd(), 'data', 'db.json');
 
-  // Helper para borrar archivos físicos
-  private deleteFile(fileUrl: string) {
-    if (!fileUrl) return;
-    
-    // Convertir URL (/uploads/file.ext) a ruta física
-    const fileName = fileUrl.replace('/uploads/', '');
-    const uploadsDir = process.env.NODE_ENV === 'production' 
-      ? '/home/data/uploads' 
-      : join(__dirname, '..', '..', 'uploads');
-    
-    const filePath = join(uploadsDir, fileName);
-    
-    if (fs.existsSync(filePath)) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (err) {
-        console.error(`Error eliminando archivo: ${filePath}`, err);
+  onModuleInit() {
+    if (!fs.existsSync(path.dirname(this.dbPath))) {
+      fs.mkdirSync(path.dirname(this.dbPath), { recursive: true });
+    }
+    this.ensureDbStructure();
+  }
+
+  private ensureDbStructure() {
+    let data;
+    try {
+      if (fs.existsSync(this.dbPath)) {
+        data = JSON.parse(fs.readFileSync(this.dbPath, 'utf8'));
       }
+    } catch (e) {
+      data = {};
+    }
+
+    if (!data || typeof data !== 'object') data = {};
+    if (!Array.isArray(data.shelves)) data.shelves = [{ id: 1, titulo: 'Estantería Principal' }];
+    if (!Array.isArray(data.categories)) data.categories = [{ id: 1, nombre: 'General', shelfId: 1 }];
+    if (!Array.isArray(data.products)) data.products = [];
+
+    this.saveData(data);
+  }
+
+  private getData() {
+    try {
+      const data = JSON.parse(fs.readFileSync(this.dbPath, 'utf8'));
+      return {
+        shelves: Array.isArray(data.shelves) ? data.shelves : [],
+        categories: Array.isArray(data.categories) ? data.categories : [],
+        products: Array.isArray(data.products) ? data.products : []
+      };
+    } catch (e) {
+      return { shelves: [], categories: [], products: [] };
     }
   }
 
-  // ─── Seed de datos inicial ───
-  async onModuleInit() {
-    const count = await this.shelfRepository.count();
-    if (count === 0) {
-      console.log('Base de datos vacía. Creando datos iniciales...');
-      
-      const shelf = await this.shelfRepository.save(
-        this.shelfRepository.create({ titulo: 'Estantería Principal' })
-      );
+  private saveData(data: any) {
+    fs.writeFileSync(this.dbPath, JSON.stringify(data, null, 2));
+  }
 
-      const cat = await this.categoryRepository.save(
-        this.categoryRepository.create({ 
-          nombre: 'General', 
-          estanteria: shelf 
-        })
-      );
+  private saveImage(base64Data: string, prefix: string): string | null {
+    if (!base64Data || !base64Data.startsWith('data:image')) return null;
 
-      console.log('Datos iniciales creados con éxito.');
+    try {
+      const extension = base64Data.split(';')[0].split('/')[1];
+      const base64Image = base64Data.split(';base64,').pop();
+      const fileName = `${prefix}-${Date.now()}.${extension}`;
+      const uploadsPath = process.env.NODE_ENV === 'production' ? '/home/data/uploads' : path.join(process.cwd(), 'uploads');
+
+      if (!fs.existsSync(uploadsPath)) {
+        fs.mkdirSync(uploadsPath, { recursive: true });
+      }
+
+      fs.writeFileSync(path.join(uploadsPath, fileName), base64Image, { encoding: 'base64' });
+      return fileName;
+    } catch (e) {
+      console.error('Error saving image:', e);
+      return null;
     }
   }
 
-  // ─── Estanterías ───
-  async getInventario(): Promise<Shelf[]> {
-    return this.shelfRepository.find({
-      relations: ['categorias', 'categorias.productos'],
-    });
+  // Estanterías
+  async getInventario() {
+    const data = this.getData();
+    return data.shelves.map(shelf => ({
+      ...shelf,
+      categorias: data.categories
+        .filter(c => Number(c.shelfId) === Number(shelf.id))
+        .map(cat => ({
+          ...cat,
+          productos: data.products.filter(p => p.categoryIds?.map(Number).includes(Number(cat.id)))
+        }))
+    }));
   }
 
-  async createShelf(titulo: string): Promise<Shelf> {
-    const newShelf = this.shelfRepository.create({ titulo });
-    return this.shelfRepository.save(newShelf);
+  async createShelf(titulo: string) {
+    const data = this.getData();
+    const newShelf = { id: Date.now(), titulo, categorias: [] };
+    data.shelves.push(newShelf);
+    this.saveData(data);
+    return newShelf;
   }
 
-  async deleteShelf(id: number): Promise<void> {
-    // Las categorías se borran en cascada por la BD
-    await this.shelfRepository.delete(id);
+  async deleteShelf(id: number) {
+    const data = this.getData();
+    // Use Number() to ensure type safety
+    data.shelves = data.shelves.filter(s => Number(s.id) !== Number(id));
+    // Cascade delete categories
+    data.categories = data.categories.filter(c => Number(c.shelfId) !== Number(id));
+    this.saveData(data);
   }
 
-  // ─── Categorías ───
-  async getAllCategories(): Promise<Category[]> {
-    return this.categoryRepository.find({
-      relations: ['estanteria'],
-    });
+  // Categorías
+  async getAllCategories() {
+    const data = this.getData();
+    return data.categories.map(c => ({
+      ...c,
+      estanteria: data.shelves.find(s => Number(s.id) === Number(c.shelfId))
+    }));
   }
 
-  async createCategory(nombre: string, shelfId: number, imagenUrl?: string): Promise<Category> {
-    const shelf = await this.shelfRepository.findOneBy({ id: shelfId });
+  async createCategory(nombre: string, shelfId: number, imagenUrl?: string) {
+    const data = this.getData();
+    const shelf = data.shelves.find(s => Number(s.id) === Number(shelfId));
     if (!shelf) throw new NotFoundException('Estantería no encontrada');
-    
-    const newCat = this.categoryRepository.create({ nombre, estanteria: shelf, imagenUrl });
-    return this.categoryRepository.save(newCat);
+
+    const finalImageUrl = imagenUrl && imagenUrl.startsWith('data:')
+      ? this.saveImage(imagenUrl, 'cat')
+      : imagenUrl;
+
+    const newCategory = { id: Date.now(), nombre, shelfId: Number(shelfId), imagenUrl: finalImageUrl, productos: [] };
+    data.categories.push(newCategory);
+    this.saveData(data);
+    return newCategory;
   }
 
-  async deleteCategory(id: number): Promise<void> {
-    const category = await this.categoryRepository.findOneBy({ id });
-    if (category && category.imagenUrl) {
-      this.deleteFile(category.imagenUrl);
+  async deleteCategory(id: number) {
+    const data = this.getData();
+    // Use Number() to ensure type safety
+    data.categories = data.categories.filter(c => Number(c.id) !== Number(id));
+    this.saveData(data);
+  }
+
+  async getProductsByCategory(categoryId: number) {
+    const data = this.getData();
+    return data.products.filter(p => p.categoryIds?.map(Number).includes(Number(categoryId)));
+  }
+
+  // Productos
+  async getAllProducts() {
+    const data = this.getData();
+    return data.products.map(p => ({
+      ...p,
+      categorias: data.categories.filter(c => p.categoryIds?.map(Number).includes(Number(c.id)))
+    }));
+  }
+
+  async getFeaturedProducts() {
+    const data = this.getData();
+    return data.products.filter(p => p.esCombo || p.esOferta);
+  }
+
+  async createProduct(productData: any) {
+    const data = this.getData();
+
+    if (productData.imagenUrl && productData.imagenUrl.startsWith('data:')) {
+      productData.imagenUrl = this.saveImage(productData.imagenUrl, 'prod');
     }
-    await this.categoryRepository.delete(id);
+
+    const newProduct = {
+      id: Date.now(),
+      ...productData,
+      cantidad: Number(productData.cantidad),
+      precio: Number(productData.precio),
+      categoryIds: productData.categoryIds?.map(Number) || []
+    };
+    data.products.push(newProduct);
+    this.saveData(data);
+    return newProduct;
   }
 
-  async getCategoryProducts(categoryId: number): Promise<Product[]> {
-    const category = await this.categoryRepository.findOne({
-      where: { id: categoryId },
-      relations: ['productos'],
-    });
-    if (!category) throw new NotFoundException('Categoría no encontrada');
-    
-    // Devolvemos todos los productos de la categoría, incluyendo combos y ofertas
-    return category.productos;
-  }
+  async updateProduct(id: number, updateData: any) {
+    const data = this.getData();
+    const index = data.products.findIndex(p => Number(p.id) === Number(id));
+    if (index === -1) throw new NotFoundException('Producto no encontrado');
 
-  async assignProductsToCategory(categoryId: number, productIds: number[]): Promise<Category> {
-    const category = await this.categoryRepository.findOne({
-      where: { id: categoryId },
-      relations: ['productos'],
-    });
-    if (!category) throw new NotFoundException('Categoría no encontrada');
-
-    const products = await this.productRepository.findBy({ id: In(productIds) });
-    category.productos = products;
-    return this.categoryRepository.save(category);
-  }
-
-  // ─── Productos ───
-  async getAllProducts(): Promise<Product[]> {
-    return this.productRepository.find({
-      relations: ['categorias']
-    });
-  }
-
-  async getFeaturedProducts(): Promise<Product[]> {
-    return this.productRepository.find({
-      where: [
-        { esCombo: true },
-        { esOferta: true }
-      ]
-    });
-  }
-
-  async createProduct(
-    nombre: string, 
-    cantidad: number, 
-    precio: number, 
-    categoryIds: number[],
-    imagenUrl?: string, 
-    esCombo?: boolean, 
-    esOferta?: boolean
-  ): Promise<Product> {
-    const categories = categoryIds.length > 0 
-      ? await this.categoryRepository.findBy({ id: In(categoryIds) })
-      : [];
-
-    const newProduct = this.productRepository.create({ 
-      nombre, 
-      cantidad, 
-      precio, 
-      imagenUrl,
-      esCombo: esCombo || false,
-      esOferta: esOferta || false,
-      categorias: categories,
-    });
-    return this.productRepository.save(newProduct);
-  }
-
-  async updateProduct(
-    id: number,
-    data: {
-      nombre?: string;
-      cantidad?: number;
-      precio?: number;
-      imagenUrl?: string;
-      esCombo?: boolean;
-      esOferta?: boolean;
-      categoryIds?: number[];
+    if (updateData.imagenUrl && updateData.imagenUrl.startsWith('data:')) {
+      updateData.imagenUrl = this.saveImage(updateData.imagenUrl, 'prod');
     }
-  ): Promise<Product> {
-    const product = await this.productRepository.findOne({
-      where: { id },
-      relations: ['categorias'],
-    });
+
+    data.products[index] = { ...data.products[index], ...updateData, id: data.products[index].id };
+    this.saveData(data);
+    return data.products[index];
+  }
+
+  async deleteProduct(id: number) {
+    const data = this.getData();
+    data.products = data.products.filter(p => Number(p.id) !== Number(id));
+    this.saveData(data);
+  }
+
+  async updateStock(id: number, cantidad: number) {
+    const data = this.getData();
+    const product = data.products.find(p => Number(p.id) === Number(id));
     if (!product) throw new NotFoundException('Producto no encontrado');
-
-    if (data.nombre !== undefined) product.nombre = data.nombre;
-    if (data.cantidad !== undefined) product.cantidad = data.cantidad;
-    if (data.precio !== undefined) product.precio = data.precio;
-    
-    if (data.imagenUrl !== undefined) {
-      // Si ya tenía imagen y es distinta, borrar la vieja
-      if (product.imagenUrl && product.imagenUrl !== data.imagenUrl) {
-        this.deleteFile(product.imagenUrl);
-      }
-      product.imagenUrl = data.imagenUrl;
-    }
-
-    if (data.esCombo !== undefined) product.esCombo = data.esCombo;
-    if (data.esOferta !== undefined) product.esOferta = data.esOferta;
-
-    if (data.categoryIds !== undefined) {
-      product.categorias = data.categoryIds.length > 0 
-        ? await this.categoryRepository.findBy({ id: In(data.categoryIds) })
-        : [];
-    }
-
-    return this.productRepository.save(product);
-  }
-
-  async deleteProduct(id: number): Promise<void> {
-    const product = await this.productRepository.findOne({
-      where: { id },
-      relations: ['categorias'],
-    });
-    if (!product) throw new NotFoundException('Producto no encontrado');
-
-    if (product.imagenUrl) {
-      this.deleteFile(product.imagenUrl);
-    }
-
-    // Limpiar relación ManyToMany antes de borrar
-    product.categorias = [];
-    await this.productRepository.save(product);
-    await this.productRepository.delete(id);
-  }
-
-  async seedTestProducts(): Promise<Product[]> {
-    let categorias = await this.categoryRepository.find({ relations: ['estanteria'] });
-
-    if (categorias.length === 0) {
-      const shelf = await this.shelfRepository.save({ titulo: 'Pruebas' });
-      const demoCat = await this.categoryRepository.save({ nombre: 'Demostración', estanteria: shelf });
-      categorias = [demoCat];
-    }
-
-    const nombres = [
-      'Brillo Aurora',
-      'Serum Nocturno',
-      'Labial Velvet',
-      'Delineador Prisma',
-      'Rubor Holográfico',
-      'Iluminador Boreal',
-      'Base Seda',
-      'Máscara Volumen',
-      'Tónico Floral',
-      'Aceite Lumi'
-    ];
-
-    const imagenes = [
-      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800',
-      'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800',
-      'https://images.unsplash.com/photo-1526045478516-99145907023c?w=800',
-      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=700',
-      'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=800',
-      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600',
-      'https://images.unsplash.com/photo-1526045431048-0c1df022bdd7?w=800',
-      'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=700',
-      'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500',
-      'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=600'
-    ];
-
-    const nuevos: Product[] = [];
-
-    for (let i = 0; i < 10; i++) {
-      const categoria = categorias[Math.floor(Math.random() * categorias.length)];
-      const esCombo = i % 3 === 0;
-      const esOferta = i % 3 === 1;
-
-      const producto = this.productRepository.create({
-        nombre: `${nombres[i % nombres.length]} #${i + 1}`,
-        cantidad: Math.floor(Math.random() * 15) + 5,
-        precio: parseFloat((Math.random() * 80 + 10).toFixed(2)),
-        imagenUrl: imagenes[i % imagenes.length],
-        esCombo,
-        esOferta,
-        categorias: [categoria],
-      });
-
-      nuevos.push(producto);
-    }
-
-    return this.productRepository.save(nuevos);
-  }
-
-  async updateStock(id: number, cantidad: number): Promise<Product> {
-    const product = await this.productRepository.findOneBy({ id });
-    if (!product) throw new NotFoundException('Producto no encontrado');
-    
     product.cantidad = cantidad;
-    return this.productRepository.save(product);
+    this.saveData(data);
+    return product;
   }
 }
-2

@@ -1,0 +1,60 @@
+{
+  "shelves": [
+    {
+      "id": 1771108836678,
+      "titulo": "Estante2",
+      "categorias": []
+    },
+    {
+      "id": 1771109631179,
+      "titulo": "Estante1",
+      "categorias": []
+    }
+  ],
+  "categories": [
+    {
+      "id": 1771110051375,
+      "nombre": "Cara",
+      "shelfId": 1771109631179,
+      "imagenUrl": "cat-1771110051374.jpeg",
+      "productos": []
+    },
+    {
+      "id": 1771110066128,
+      "nombre": "Maquillaje",
+      "shelfId": 1771108836678,
+      "imagenUrl": "cat-1771110066128.jpeg",
+      "productos": []
+    }
+  ],
+  "products": [
+    {
+      "id": 1771110158922,
+      "nombre": "Labiales",
+      "cantidad": 12,
+      "precio": 150,
+      "categoryIds": [
+        1771109210153,
+        1771110051375,
+        1771110066128
+      ],
+      "esCombo": true,
+      "esOferta": true,
+      "imagenUrl": "prod-1771110158921.jpeg"
+    },
+    {
+      "id": 1771110180230,
+      "nombre": "Maquillaje",
+      "cantidad": 10,
+      "precio": 140,
+      "categoryIds": [
+        1771109210153,
+        1771110051375,
+        1771110066128
+      ],
+      "esCombo": true,
+      "esOferta": true,
+      "imagenUrl": "prod-1771110180229.jpeg"
+    }
+  ]
+}

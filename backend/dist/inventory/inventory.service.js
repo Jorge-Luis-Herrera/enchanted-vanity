@@ -38,249 +38,188 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InventoryService = void 0;
 const common_1 = require("@nestjs/common");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_2 = require("typeorm");
-const product_entity_1 = require("./entities/product.entity");
-const shelf_entity_1 = require("./entities/shelf.entity");
-const category_entity_1 = require("./entities/category.entity");
 const fs = __importStar(require("fs"));
-const path_1 = require("path");
+const path = __importStar(require("path"));
 let InventoryService = class InventoryService {
-    productRepository;
-    shelfRepository;
-    categoryRepository;
-    constructor(productRepository, shelfRepository, categoryRepository) {
-        this.productRepository = productRepository;
-        this.shelfRepository = shelfRepository;
-        this.categoryRepository = categoryRepository;
+    constructor() {
+        this.dbPath = process.env.NODE_ENV === 'production'
+            ? '/home/data/db.json'
+            : path.join(process.cwd(), 'data', 'db.json');
     }
-    deleteFile(fileUrl) {
-        if (!fileUrl)
-            return;
-        const fileName = fileUrl.replace('/uploads/', '');
-        const uploadsDir = process.env.NODE_ENV === 'production'
-            ? '/home/data/uploads'
-            : (0, path_1.join)(__dirname, '..', '..', 'uploads');
-        const filePath = (0, path_1.join)(uploadsDir, fileName);
-        if (fs.existsSync(filePath)) {
-            try {
-                fs.unlinkSync(filePath);
-            }
-            catch (err) {
-                console.error(`Error eliminando archivo: ${filePath}`, err);
+    onModuleInit() {
+        if (!fs.existsSync(path.dirname(this.dbPath))) {
+            fs.mkdirSync(path.dirname(this.dbPath), { recursive: true });
+        }
+        this.ensureDbStructure();
+    }
+    ensureDbStructure() {
+        let data;
+        try {
+            if (fs.existsSync(this.dbPath)) {
+                data = JSON.parse(fs.readFileSync(this.dbPath, 'utf8'));
             }
         }
+        catch (e) {
+            data = {};
+        }
+        if (!data || typeof data !== 'object')
+            data = {};
+        if (!Array.isArray(data.shelves))
+            data.shelves = [{ id: 1, titulo: 'Estantería Principal' }];
+        if (!Array.isArray(data.categories))
+            data.categories = [{ id: 1, nombre: 'General', shelfId: 1 }];
+        if (!Array.isArray(data.products))
+            data.products = [];
+        this.saveData(data);
     }
-    async onModuleInit() {
-        const count = await this.shelfRepository.count();
-        if (count === 0) {
-            console.log('Base de datos vacía. Creando datos iniciales...');
-            const shelf = await this.shelfRepository.save(this.shelfRepository.create({ titulo: 'Estantería Principal' }));
-            const cat = await this.categoryRepository.save(this.categoryRepository.create({
-                nombre: 'General',
-                estanteria: shelf
-            }));
-            console.log('Datos iniciales creados con éxito.');
+    getData() {
+        try {
+            const data = JSON.parse(fs.readFileSync(this.dbPath, 'utf8'));
+            return {
+                shelves: Array.isArray(data.shelves) ? data.shelves : [],
+                categories: Array.isArray(data.categories) ? data.categories : [],
+                products: Array.isArray(data.products) ? data.products : []
+            };
+        }
+        catch (e) {
+            return { shelves: [], categories: [], products: [] };
+        }
+    }
+    saveData(data) {
+        fs.writeFileSync(this.dbPath, JSON.stringify(data, null, 2));
+    }
+    saveImage(base64Data, prefix) {
+        if (!base64Data || !base64Data.startsWith('data:image'))
+            return null;
+        try {
+            const extension = base64Data.split(';')[0].split('/')[1];
+            const base64Image = base64Data.split(';base64,').pop();
+            const fileName = `${prefix}-${Date.now()}.${extension}`;
+            const uploadsPath = process.env.NODE_ENV === 'production' ? '/home/data/uploads' : path.join(process.cwd(), 'uploads');
+            if (!fs.existsSync(uploadsPath)) {
+                fs.mkdirSync(uploadsPath, { recursive: true });
+            }
+            fs.writeFileSync(path.join(uploadsPath, fileName), base64Image, { encoding: 'base64' });
+            return fileName;
+        }
+        catch (e) {
+            console.error('Error saving image:', e);
+            return null;
         }
     }
     async getInventario() {
-        return this.shelfRepository.find({
-            relations: ['categorias', 'categorias.productos'],
-        });
+        const data = this.getData();
+        return data.shelves.map(shelf => ({
+            ...shelf,
+            categorias: data.categories
+                .filter(c => Number(c.shelfId) === Number(shelf.id))
+                .map(cat => ({
+                ...cat,
+                productos: data.products.filter(p => p.categoryIds?.map(Number).includes(Number(cat.id)))
+            }))
+        }));
     }
     async createShelf(titulo) {
-        const newShelf = this.shelfRepository.create({ titulo });
-        return this.shelfRepository.save(newShelf);
+        const data = this.getData();
+        const newShelf = { id: Date.now(), titulo, categorias: [] };
+        data.shelves.push(newShelf);
+        this.saveData(data);
+        return newShelf;
     }
     async deleteShelf(id) {
-        await this.shelfRepository.delete(id);
+        const data = this.getData();
+        data.shelves = data.shelves.filter(s => Number(s.id) !== Number(id));
+        data.categories = data.categories.filter(c => Number(c.shelfId) !== Number(id));
+        this.saveData(data);
     }
     async getAllCategories() {
-        return this.categoryRepository.find({
-            relations: ['estanteria'],
-        });
+        const data = this.getData();
+        return data.categories.map(c => ({
+            ...c,
+            estanteria: data.shelves.find(s => Number(s.id) === Number(c.shelfId))
+        }));
     }
     async createCategory(nombre, shelfId, imagenUrl) {
-        const shelf = await this.shelfRepository.findOneBy({ id: shelfId });
+        const data = this.getData();
+        const shelf = data.shelves.find(s => Number(s.id) === Number(shelfId));
         if (!shelf)
             throw new common_1.NotFoundException('Estantería no encontrada');
-        const newCat = this.categoryRepository.create({ nombre, estanteria: shelf, imagenUrl });
-        return this.categoryRepository.save(newCat);
+        const finalImageUrl = imagenUrl && imagenUrl.startsWith('data:')
+            ? this.saveImage(imagenUrl, 'cat')
+            : imagenUrl;
+        const newCategory = { id: Date.now(), nombre, shelfId: Number(shelfId), imagenUrl: finalImageUrl, productos: [] };
+        data.categories.push(newCategory);
+        this.saveData(data);
+        return newCategory;
     }
     async deleteCategory(id) {
-        const category = await this.categoryRepository.findOneBy({ id });
-        if (category && category.imagenUrl) {
-            this.deleteFile(category.imagenUrl);
-        }
-        await this.categoryRepository.delete(id);
+        const data = this.getData();
+        data.categories = data.categories.filter(c => Number(c.id) !== Number(id));
+        this.saveData(data);
     }
-    async getCategoryProducts(categoryId) {
-        const category = await this.categoryRepository.findOne({
-            where: { id: categoryId },
-            relations: ['productos'],
-        });
-        if (!category)
-            throw new common_1.NotFoundException('Categoría no encontrada');
-        return category.productos;
-    }
-    async assignProductsToCategory(categoryId, productIds) {
-        const category = await this.categoryRepository.findOne({
-            where: { id: categoryId },
-            relations: ['productos'],
-        });
-        if (!category)
-            throw new common_1.NotFoundException('Categoría no encontrada');
-        const products = await this.productRepository.findBy({ id: (0, typeorm_2.In)(productIds) });
-        category.productos = products;
-        return this.categoryRepository.save(category);
+    async getProductsByCategory(categoryId) {
+        const data = this.getData();
+        return data.products.filter(p => p.categoryIds?.map(Number).includes(Number(categoryId)));
     }
     async getAllProducts() {
-        return this.productRepository.find({
-            relations: ['categorias']
-        });
+        const data = this.getData();
+        return data.products.map(p => ({
+            ...p,
+            categorias: data.categories.filter(c => p.categoryIds?.map(Number).includes(Number(c.id)))
+        }));
     }
     async getFeaturedProducts() {
-        return this.productRepository.find({
-            where: [
-                { esCombo: true },
-                { esOferta: true }
-            ]
-        });
+        const data = this.getData();
+        return data.products.filter(p => p.esCombo || p.esOferta);
     }
-    async createProduct(nombre, cantidad, precio, categoryIds, imagenUrl, esCombo, esOferta) {
-        const categories = categoryIds.length > 0
-            ? await this.categoryRepository.findBy({ id: (0, typeorm_2.In)(categoryIds) })
-            : [];
-        const newProduct = this.productRepository.create({
-            nombre,
-            cantidad,
-            precio,
-            imagenUrl,
-            esCombo: esCombo || false,
-            esOferta: esOferta || false,
-            categorias: categories,
-        });
-        return this.productRepository.save(newProduct);
+    async createProduct(productData) {
+        const data = this.getData();
+        if (productData.imagenUrl && productData.imagenUrl.startsWith('data:')) {
+            productData.imagenUrl = this.saveImage(productData.imagenUrl, 'prod');
+        }
+        const newProduct = {
+            id: Date.now(),
+            ...productData,
+            cantidad: Number(productData.cantidad),
+            precio: Number(productData.precio),
+            categoryIds: productData.categoryIds?.map(Number) || []
+        };
+        data.products.push(newProduct);
+        this.saveData(data);
+        return newProduct;
     }
-    async updateProduct(id, data) {
-        const product = await this.productRepository.findOne({
-            where: { id },
-            relations: ['categorias'],
-        });
-        if (!product)
+    async updateProduct(id, updateData) {
+        const data = this.getData();
+        const index = data.products.findIndex(p => Number(p.id) === Number(id));
+        if (index === -1)
             throw new common_1.NotFoundException('Producto no encontrado');
-        if (data.nombre !== undefined)
-            product.nombre = data.nombre;
-        if (data.cantidad !== undefined)
-            product.cantidad = data.cantidad;
-        if (data.precio !== undefined)
-            product.precio = data.precio;
-        if (data.imagenUrl !== undefined) {
-            if (product.imagenUrl && product.imagenUrl !== data.imagenUrl) {
-                this.deleteFile(product.imagenUrl);
-            }
-            product.imagenUrl = data.imagenUrl;
+        if (updateData.imagenUrl && updateData.imagenUrl.startsWith('data:')) {
+            updateData.imagenUrl = this.saveImage(updateData.imagenUrl, 'prod');
         }
-        if (data.esCombo !== undefined)
-            product.esCombo = data.esCombo;
-        if (data.esOferta !== undefined)
-            product.esOferta = data.esOferta;
-        if (data.categoryIds !== undefined) {
-            product.categorias = data.categoryIds.length > 0
-                ? await this.categoryRepository.findBy({ id: (0, typeorm_2.In)(data.categoryIds) })
-                : [];
-        }
-        return this.productRepository.save(product);
+        data.products[index] = { ...data.products[index], ...updateData, id: data.products[index].id };
+        this.saveData(data);
+        return data.products[index];
     }
     async deleteProduct(id) {
-        const product = await this.productRepository.findOne({
-            where: { id },
-            relations: ['categorias'],
-        });
-        if (!product)
-            throw new common_1.NotFoundException('Producto no encontrado');
-        if (product.imagenUrl) {
-            this.deleteFile(product.imagenUrl);
-        }
-        product.categorias = [];
-        await this.productRepository.save(product);
-        await this.productRepository.delete(id);
-    }
-    async seedTestProducts() {
-        let categorias = await this.categoryRepository.find({ relations: ['estanteria'] });
-        if (categorias.length === 0) {
-            const shelf = await this.shelfRepository.save({ titulo: 'Pruebas' });
-            const demoCat = await this.categoryRepository.save({ nombre: 'Demostración', estanteria: shelf });
-            categorias = [demoCat];
-        }
-        const nombres = [
-            'Brillo Aurora',
-            'Serum Nocturno',
-            'Labial Velvet',
-            'Delineador Prisma',
-            'Rubor Holográfico',
-            'Iluminador Boreal',
-            'Base Seda',
-            'Máscara Volumen',
-            'Tónico Floral',
-            'Aceite Lumi'
-        ];
-        const imagenes = [
-            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=800',
-            'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800',
-            'https://images.unsplash.com/photo-1526045478516-99145907023c?w=800',
-            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=700',
-            'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=800',
-            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=600',
-            'https://images.unsplash.com/photo-1526045431048-0c1df022bdd7?w=800',
-            'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=700',
-            'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500',
-            'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=600'
-        ];
-        const nuevos = [];
-        for (let i = 0; i < 10; i++) {
-            const categoria = categorias[Math.floor(Math.random() * categorias.length)];
-            const esCombo = i % 3 === 0;
-            const esOferta = i % 3 === 1;
-            const producto = this.productRepository.create({
-                nombre: `${nombres[i % nombres.length]} #${i + 1}`,
-                cantidad: Math.floor(Math.random() * 15) + 5,
-                precio: parseFloat((Math.random() * 80 + 10).toFixed(2)),
-                imagenUrl: imagenes[i % imagenes.length],
-                esCombo,
-                esOferta,
-                categorias: [categoria],
-            });
-            nuevos.push(producto);
-        }
-        return this.productRepository.save(nuevos);
+        const data = this.getData();
+        data.products = data.products.filter(p => Number(p.id) !== Number(id));
+        this.saveData(data);
     }
     async updateStock(id, cantidad) {
-        const product = await this.productRepository.findOneBy({ id });
+        const data = this.getData();
+        const product = data.products.find(p => Number(p.id) === Number(id));
         if (!product)
             throw new common_1.NotFoundException('Producto no encontrado');
         product.cantidad = cantidad;
-        return this.productRepository.save(product);
+        this.saveData(data);
+        return product;
     }
 };
 exports.InventoryService = InventoryService;
 exports.InventoryService = InventoryService = __decorate([
-    (0, common_1.Injectable)(),
-    __param(0, (0, typeorm_1.InjectRepository)(product_entity_1.Product)),
-    __param(1, (0, typeorm_1.InjectRepository)(shelf_entity_1.Shelf)),
-    __param(2, (0, typeorm_1.InjectRepository)(category_entity_1.Category)),
-    __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository,
-        typeorm_2.Repository])
+    (0, common_1.Injectable)()
 ], InventoryService);
-2;
 //# sourceMappingURL=inventory.service.js.map
