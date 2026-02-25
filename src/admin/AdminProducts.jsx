@@ -10,11 +10,13 @@ const AdminProducts = () => {
 
     const emptyProduct = {
         nombre: "",
+        descripcion: "",
         cantidad: 0,
         precio: 0,
         categoryIds: [],
         esCombo: false,
         esOferta: false,
+        isBestSeller: false,
     };
     const [formData, setFormData] = useState(emptyProduct);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -62,11 +64,13 @@ const AdminProducts = () => {
         setEditingId(product.id);
         setFormData({
             nombre: product.nombre,
+            descripcion: product.descripcion || "",
             cantidad: product.cantidad,
             precio: product.precio,
             categoryIds: product.categorias?.map(c => c.id) || [],
             esCombo: product.esCombo || false,
             esOferta: product.esOferta || false,
+            isBestSeller: product.isBestSeller || false,
         });
         setSelectedFile(null);
         setPreviewUrl(product.imagenUrl ? `${STATIC_URL}${product.imagenUrl}` : null);
@@ -116,11 +120,13 @@ const AdminProducts = () => {
 
         const payload = {
             nombre: nombreTrim,
+            descripcion: formData.descripcion,
             cantidad,
             precio,
             categoryIds: formData.categoryIds,
             esCombo: formData.esCombo,
             esOferta: formData.esOferta,
+            isBestSeller: formData.isBestSeller,
             imagenUrl: base64Image || (editingId ? products.find(p => p.id === editingId)?.imagenUrl : null)
         };
 
@@ -182,6 +188,15 @@ const AdminProducts = () => {
                         />
                     </div>
                     <div className="field">
+                        <label>Descripción</label>
+                        <textarea
+                            value={formData.descripcion}
+                            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                            placeholder="Añade una descripción única..."
+                            rows="2"
+                        />
+                    </div>
+                    <div className="field">
                         <label>Stock Inicial</label>
                         <input
                             type="number"
@@ -235,6 +250,14 @@ const AdminProducts = () => {
                             onChange={(e) => setFormData({ ...formData, esOferta: e.target.checked })}
                         />
                         <span className="toggle-text oferta">Es Oferta</span>
+                    </label>
+                    <label className="toggle-label">
+                        <input
+                            type="checkbox"
+                            checked={formData.isBestSeller}
+                            onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
+                        />
+                        <span className="toggle-text best-seller">Más Vendido</span>
                     </label>
                 </div>
 
@@ -315,7 +338,8 @@ const AdminProducts = () => {
                                 <td>
                                     {product.esCombo && <span className="badge combo">Combo</span>}
                                     {product.esOferta && <span className="badge oferta">Oferta</span>}
-                                    {!product.esCombo && !product.esOferta && <span style={{ fontSize: '0.7rem', color: 'gray' }}>Normal</span>}
+                                    {product.isBestSeller && <span className="badge best-seller">Top</span>}
+                                    {!product.esCombo && !product.esOferta && !product.isBestSeller && <span style={{ fontSize: '0.7rem', color: 'gray' }}>Normal</span>}
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '4px' }}>

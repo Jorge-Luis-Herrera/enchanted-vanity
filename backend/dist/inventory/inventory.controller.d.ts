@@ -27,7 +27,18 @@ export declare class InventoryController {
     findProductsByCategory(id: number): Promise<any>;
     findAllProducts(): Promise<any>;
     findFeaturedProducts(): Promise<any>;
-    createProduct(body: any): Promise<any>;
+    createProduct(body: any): Promise<{
+        id: number;
+        nombre: any;
+        descripcion: any;
+        esCombo: any;
+        esOferta: any;
+        isBestSeller: any;
+        cantidad: number;
+        precio: number;
+        imagenUrl: any;
+        categoryIds: any;
+    }>;
     updateProduct(id: number, body: any): Promise<any>;
     deleteProduct(id: number): Promise<void>;
     updateStock(id: number, body: {

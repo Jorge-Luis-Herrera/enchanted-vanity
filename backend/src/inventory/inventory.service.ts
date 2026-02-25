@@ -149,22 +149,29 @@ export class InventoryService implements OnModuleInit {
 
   async getFeaturedProducts() {
     const data = this.getData();
-    return data.products.filter(p => p.esCombo || p.esOferta);
+    return data.products.filter(p => p.esCombo || p.esOferta || p.isBestSeller);
   }
 
   async createProduct(productData: any) {
     const data = this.getData();
 
+    // Handle image upload if provided as base64
     if (productData.imagenUrl && productData.imagenUrl.startsWith('data:')) {
       productData.imagenUrl = this.saveImage(productData.imagenUrl, 'prod');
     }
 
+    // Ensure required fields have sensible defaults
     const newProduct = {
       id: Date.now(),
-      ...productData,
-      cantidad: Number(productData.cantidad),
-      precio: Number(productData.precio),
-      categoryIds: productData.categoryIds?.map(Number) || []
+      nombre: productData.nombre ?? '',
+      descripcion: productData.descripcion ?? '', // New description field
+      esCombo: productData.esCombo ?? false,
+      esOferta: productData.esOferta ?? false,
+      isBestSeller: productData.isBestSeller ?? false, // New best seller flag
+      cantidad: Number(productData.cantidad) || 0,
+      precio: Number(productData.precio) || 0,
+      imagenUrl: productData.imagenUrl ?? null,
+      categoryIds: productData.categoryIds?.map(Number) || [],
     };
     data.products.push(newProduct);
     this.saveData(data);
@@ -176,13 +183,28 @@ export class InventoryService implements OnModuleInit {
     const index = data.products.findIndex(p => Number(p.id) === Number(id));
     if (index === -1) throw new NotFoundException('Producto no encontrado');
 
+    // Handle image upload if provided as base64
     if (updateData.imagenUrl && updateData.imagenUrl.startsWith('data:')) {
       updateData.imagenUrl = this.saveImage(updateData.imagenUrl, 'prod');
     }
 
-    data.products[index] = { ...data.products[index], ...updateData, id: data.products[index].id };
+    // Merge updates, preserving existing fields and applying defaults where needed
+    const existing = data.products[index];
+    const updatedProduct = {
+      ...existing,
+      ...updateData,
+      descripcion: updateData.descripcion ?? existing.descripcion,
+      isBestSeller: updateData.isBestSeller ?? existing.isBestSeller,
+      esCombo: updateData.esCombo ?? existing.esCombo,
+      esOferta: updateData.esOferta ?? existing.esOferta,
+      cantidad: updateData.cantidad !== undefined ? Number(updateData.cantidad) : existing.cantidad,
+      precio: updateData.precio !== undefined ? Number(updateData.precio) : existing.precio,
+      categoryIds: updateData.categoryIds ? updateData.categoryIds.map(Number) : existing.categoryIds,
+      id: existing.id,
+    };
+    data.products[index] = updatedProduct;
     this.saveData(data);
-    return data.products[index];
+    return updatedProduct;
   }
 
   async deleteProduct(id: number) {

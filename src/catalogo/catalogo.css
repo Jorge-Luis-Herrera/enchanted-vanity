@@ -12,6 +12,7 @@
 }
 
 .shelf-title {
+    font-family: 'Playfair Display', serif;
     font-size: 1.1rem;
     /* Smaller for mobile */
     color: var(--text-dark);
@@ -177,6 +178,37 @@
     color: var(--text-muted);
     font-size: 0.8rem;
     line-height: 1.4;
+    margin-bottom: 5px;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+.quantity-selector button {
+    background: var(--bg-light);
+    border: 1px solid var(--glass-border);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: var(--text-dark);
+}
+
+.quantity-selector input {
+    width: 40px;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 0.9rem;
 }
 
 .action-btn {
@@ -273,6 +305,7 @@
 }
 
 .featured-shelf .shelf-title {
+    font-family: 'Playfair Display', serif;
     font-size: 1.75rem;
     text-align: center;
     border-left: none;
@@ -281,9 +314,10 @@
     text-transform: none;
     font-weight: 600;
     letter-spacing: 0.5px;
-    color: var(--text-dark); /* Changed to dark to match glass color */
+    color: var(--text-dark);
+    /* Changed to dark to match glass color */
     width: 100%;
-    text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 .hero-subtitle {
@@ -291,21 +325,24 @@
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 3px;
-    color: var(--accent-pink); /* Lighter pink for visibility */
+    color: var(--accent-pink);
+    /* Lighter pink for visibility */
     margin-bottom: 0.5rem;
     font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @media (min-width: 768px) {
     .featured-shelf {
         padding: 2.5rem 5% 3rem;
     }
+
     .featured-shelf .shelf-title {
         font-size: 2.25rem;
         margin-bottom: 1.5rem;
         color: var(--text-dark);
     }
+
     .hero-subtitle {
         font-size: 0.85rem;
         letter-spacing: 4px;
@@ -352,31 +389,74 @@
 
 .product-badges {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 8px;
+    left: 8px;
     display: flex;
-    gap: 6px;
+    flex-wrap: wrap;
+    gap: 4px;
     z-index: 2;
+    max-width: calc(100% - 16px);
 }
 
 .product-badges .badge {
-    padding: 4px 10px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    border-radius: 30px;
     font-size: 0.7rem;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+    color: #fff;
+    border: none;
+    background-size: 300% 100%;
+    background-position: left center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    animation: badge-gradient-animation 4s linear infinite;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .product-badges {
+        top: 5px;
+        left: 5px;
+        gap: 3px;
+        max-width: calc(100% - 10px);
+    }
+
+    .product-badges .badge {
+        padding: 4px 8px;
+        font-size: 0.55rem;
+        letter-spacing: 0.3px;
+    }
+}
+
+
+@keyframes badge-gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .badge-combo {
-    background: rgba(124, 58, 237, 0.95);
-    color: white;
+    background: linear-gradient(15deg, #880088, #aa2068, #cc3f47, #de6f3d, #f09f33, #de6f3d, #cc3f47, #aa2068, #880088);
 }
 
 .badge-oferta {
-    background: rgba(220, 38, 38, 0.95);
-    color: white;
+    background: linear-gradient(15deg, #dc2626, #ea580c, #f59e0b, #ea580c, #dc2626);
 }
+
+.badge-best-seller {
+    background: linear-gradient(15deg, #db2777, #f472b6, #fbbf24, #f472b6, #db2777);
+}
+
 
 .nav-btn {
     position: absolute;
@@ -506,7 +586,7 @@
     background: var(--accent-pink-dark);
     transform: scale(1.2);
 }
-    
+
 
 .carousel-track {
     display: flex;
@@ -525,7 +605,7 @@
 .featured-section .product-card {
     min-width: 90%;
     height: 320px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .carousel-hint {
@@ -618,7 +698,7 @@
     color: white;
     font-size: 0.95rem;
     font-weight: 600;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ─── Category Drawer (Panel lateral) ─── */
@@ -662,50 +742,63 @@
     transform: translateX(0);
 }
 
-.drawer-header {
-    padding: 20px;
-    border-bottom: 1px solid var(--glass-border);
-    background: #fdfdfd;
+.drawer-header-main {
+    padding: 0;
     flex-shrink: 0;
 }
 
-.drawer-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: var(--text-muted);
-    float: right;
-    padding: 0;
-    line-height: 1;
-    transition: color 0.2s;
+.drawer-top-bar {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: #fff;
+    border-bottom: 1px solid var(--glass-border);
+    gap: 15px;
 }
 
-.drawer-close:hover {
+.drawer-back {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
     color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.drawer-brand {
+    font-size: 1.2rem;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.drawer-brand span {
+    color: var(--accent-pink);
+}
+
+.drawer-subcategory-info {
+    padding: 20px;
 }
 
 .drawer-title {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     color: var(--text-dark);
-    margin-top: 5px;
-    margin-bottom: 15px;
+    margin: 0 0 15px;
     font-weight: 700;
+    text-align: center;
 }
 
 .drawer-search input {
     width: 100%;
-    padding: 10px 15px;
+    padding: 12px 20px;
     border: 1px solid var(--glass-border);
-    border-radius: 25px;
+    border-radius: 30px;
     font-size: 0.9rem;
     outline: none;
     background: #fff;
-    transition: border-color 0.3s;
-}
-
-.drawer-search input:focus {
-    border-color: var(--accent-pink-dark);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .drawer-products {
@@ -718,8 +811,8 @@
 
 .drawer-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
 .drawer-grid .product-card {
@@ -743,7 +836,7 @@
     }
 
     .drawer-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
     }
 
