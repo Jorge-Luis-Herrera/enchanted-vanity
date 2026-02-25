@@ -45,23 +45,30 @@ const CategoryDrawer = ({ categoryId, categoryName, isOpen, onClose }) => {
     return (
         <>
             {/* Overlay oscuro */}
-            <div 
-                className={`drawer-overlay ${isOpen ? 'open' : ''}`} 
+            <div
+                className={`drawer-overlay ${isOpen ? 'open' : ''}`}
                 onClick={onClose}
             />
-            
+
             {/* Panel lateral */}
             <div className={`category-drawer ${isOpen ? 'open' : ''}`}>
-                <div className="drawer-header">
-                    <button className="drawer-close" onClick={onClose}>✕</button>
-                    <h2 className="drawer-title">{categoryName}</h2>
-                    <div className="drawer-search">
-                        <input 
-                            type="text"
-                            placeholder="Buscar en esta categoría..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
+                <div className="drawer-header-main">
+                    <div className="drawer-top-bar">
+                        <button className="drawer-back" onClick={onClose}>
+                            <span className="back-arrow">←</span> Atrás
+                        </button>
+                        <h1 className="drawer-brand">B&V <span>Cosmetics</span></h1>
+                    </div>
+                    <div className="drawer-subcategory-info">
+                        <h2 className="drawer-title">{categoryName}</h2>
+                        <div className="drawer-search">
+                            <input
+                                type="text"
+                                placeholder="Buscar en esta categoría..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -71,15 +78,18 @@ const CategoryDrawer = ({ categoryId, categoryName, isOpen, onClose }) => {
                     ) : filteredProducts.length > 0 ? (
                         <div className="drawer-grid">
                             {filteredProducts.map(product => (
-                                <ProductCard 
+                                <ProductCard
                                     key={product.id}
-                                    name={product.nombre} 
-                                    quantity={product.cantidad} 
-                                    price={product.precio} 
-                                    imagenUrl={product.imagenUrl} 
+                                    name={product.nombre}
+                                    descripcion={product.descripcion}
+                                    quantity={product.cantidad}
+                                    price={product.precio}
+                                    imagenUrl={product.imagenUrl}
                                     esCombo={product.esCombo}
                                     esOferta={product.esOferta}
+                                    isBestSeller={product.isBestSeller}
                                 />
+
                             ))}
                         </div>
                     ) : (

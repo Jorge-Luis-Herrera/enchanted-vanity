@@ -13,8 +13,8 @@ const ShelfRow = ({ title, subtitle, items, isFeatured, onCategoryClick }) => {
         if (scrollRef.current) {
             const container = scrollRef.current;
             const itemWidth = container.firstChild ? container.firstChild.clientWidth : container.clientWidth;
-            const scrollTo = direction === "left" 
-                ? container.scrollLeft - itemWidth 
+            const scrollTo = direction === "left"
+                ? container.scrollLeft - itemWidth
                 : container.scrollLeft + itemWidth;
             container.scrollTo({ left: scrollTo, behavior: "smooth" });
         }
@@ -26,28 +26,32 @@ const ShelfRow = ({ title, subtitle, items, isFeatured, onCategoryClick }) => {
                 {isFeatured && subtitle && <p className="hero-subtitle">{subtitle}</p>}
                 <h2 className="shelf-title">{title}</h2>
             </div>
-            
+
             <div className="shelf-wrapper">
                 {isFeatured && (
                     <button className="nav-btn prev" onClick={() => scroll("left")} aria-label="Anterior">❮</button>
                 )}
-                
+
                 <div className={`shelf-row ${isFeatured ? "featured" : ""}`} ref={scrollRef}>
                     {items && items.map((item) => (
                         <div className={isFeatured ? "carousel-item" : "shelf-item"} key={item.id}>
                             {isFeatured ? (
                                 // Banner de combos/ofertas: mostramos ProductCard con badges
-                                <ProductCard 
-                                    name={item.nombre} 
-                                    quantity={item.cantidad} 
-                                    price={item.precio} 
+                                <ProductCard
+                                    name={item.nombre}
+                                    descripcion={item.descripcion}
+                                    quantity={item.cantidad}
+                                    price={item.precio}
                                     imagenUrl={item.imagenUrl}
                                     esCombo={item.esCombo}
                                     esOferta={item.esOferta}
+                                    isBestSeller={item.isBestSeller}
                                 />
+
+
                             ) : (
                                 // Estanterías normales: mostramos CategoryCard
-                                <CategoryCard 
+                                <CategoryCard
                                     nombre={item.nombre}
                                     imagenUrl={item.imagenUrl}
                                     onClick={() => onCategoryClick && onCategoryClick(item.id, item.nombre)}

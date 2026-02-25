@@ -5,7 +5,7 @@ import Header from "./header/header";
 import ShelfRow from "./catalogo/ShelfRow";
 import CategoryDrawer from "./catalogo/CategoryDrawer";
 import Footer from "./footer/footer";
-import Login from "./admin/Login"; 
+import Login from "./admin/Login";
 import AdminLayout from "./admin/AdminLayout";
 import AdminShelves from "./admin/AdminShelves";
 import AdminCategories from "./admin/AdminCategories";
@@ -36,15 +36,15 @@ const Tienda = () => {
                 return res.json();
             }),
         ])
-        .then(([inv, feat]) => {
-            setInventario(Array.isArray(inv) ? inv : []);
-            setDestacados(Array.isArray(feat) ? feat : []);
-            setCargando(false);
-        })
-        .catch((err) => {
-            console.error("Error al conectar con el servidor:", err);
-            setCargando(false);
-        });
+            .then(([inv, feat]) => {
+                setInventario(Array.isArray(inv) ? inv : []);
+                setDestacados(Array.isArray(feat) ? feat : []);
+                setCargando(false);
+            })
+            .catch((err) => {
+                console.error("Error al conectar con el servidor:", err);
+                setCargando(false);
+            });
     }, []);
 
     // Filtrar categorías por nombre del producto o de la categoría cuando hay búsqueda
@@ -52,8 +52,8 @@ const Tienda = () => {
         if (!busqueda) return inventario;
         return inventario.map(shelf => ({
             ...shelf,
-            categorias: shelf.categorias?.filter(c => 
-                kmpSearch(c.nombre, busqueda) || 
+            categorias: shelf.categorias?.filter(c =>
+                kmpSearch(c.nombre, busqueda) ||
                 (c.productos && c.productos.some(p => kmpSearch(p.nombre, busqueda)))
             ) || []
         })).filter(shelf => shelf.categorias.length > 0);
@@ -65,12 +65,12 @@ const Tienda = () => {
 
         // Banner de combos/ofertas solo si no hay búsqueda y hay productos destacados
         if (!busqueda && destacados.length > 0) {
-            lista.push({ 
-                id: 'featured-shelf', 
-                titulo: 'Combos y ofertas destacadas !!!', 
-                subtitulo: 'Selección exclusiva para ti',
-                items: destacados, 
-                isFeatured: true 
+            lista.push({
+                id: 'featured-shelf',
+                titulo: 'Más Vendidos, Ofertas y Sets de Regalos',
+                subtitulo: 'SELECCIÓN EXCLUSIVA PARA TI',
+                items: destacados,
+                isFeatured: true
             });
         }
 
@@ -107,11 +107,11 @@ const Tienda = () => {
                 ) : (
                     inventarioAMostrar.length > 0 ? (
                         inventarioAMostrar.map(s => (
-                            <ShelfRow 
-                                key={s.id} 
-                                title={s.titulo} 
+                            <ShelfRow
+                                key={s.id}
+                                title={s.titulo}
                                 subtitle={s.subtitulo}
-                                items={s.items} 
+                                items={s.items}
                                 isFeatured={s.isFeatured}
                                 onCategoryClick={handleCategoryClick}
                             />
@@ -125,7 +125,7 @@ const Tienda = () => {
             </main>
 
             {/* Drawer lateral para productos de categoría */}
-            <CategoryDrawer 
+            <CategoryDrawer
                 categoryId={selectedCategory.id}
                 categoryName={selectedCategory.nombre}
                 isOpen={drawerOpen}
@@ -143,7 +143,7 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Tienda />} />
                 <Route path="/login" element={<Login />} />
-                
+
                 {/* Rutas Administrativas */}
                 <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                     <Route path="estanterias" element={<AdminShelves />} />

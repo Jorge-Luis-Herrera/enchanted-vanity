@@ -55,6 +55,21 @@
       "esCombo": true,
       "esOferta": true,
       "imagenUrl": "prod-1771110180229.jpeg"
+    },
+    {
+      "id": 1771971790614,
+      "nombre": "aaaaa",
+      "descripcion": "aaaaaa",
+      "esCombo": true,
+      "esOferta": true,
+      "isBestSeller": true,
+      "cantidad": 10,
+      "precio": 150,
+      "imagenUrl": "prod-1771971790603.jpeg",
+      "categoryIds": [
+        1771110051375,
+        1771110066128
+      ]
     }
   ]
 }
