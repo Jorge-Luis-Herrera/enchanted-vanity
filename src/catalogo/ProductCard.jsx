@@ -28,29 +28,28 @@ const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta, isBe
         <>
             <div
                 className={`product-card ${(esCombo || esOferta || isBestSeller) ? "product-card-featured" : ""}`}
+
                 onClick={() => setIsOpen(true)}
+                style={{
+                    backgroundImage: fullImgUrl ? `url(${fullImgUrl})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    cursor: 'pointer'
+                }}
             >
-                <div className="product-image-wrapper">
-                    {fullImgUrl ? (
-                        <img src={fullImgUrl} alt={name} className="product-image-main" />
-                    ) : (
-                        <div className="no-image-placeholder-card">Sin Imagen</div>
-                    )}
+                {(esCombo || esOferta || isBestSeller) && (
+                    <div className="product-badges">
+                        {esCombo && <span className="badge badge-combo">Combo</span>}
+                        {esOferta && <span className="badge badge-oferta">Oferta</span>}
+                        {isBestSeller && <span className="badge badge-best-seller">Más Vendido</span>}
+                    </div>
+                )}
 
-                    {(esCombo || esOferta || isBestSeller) && (
-                        <div className="product-badges">
-                            {esCombo && <span className="badge badge-combo">Combo</span>}
-                            {esOferta && <span className="badge badge-oferta">Oferta</span>}
-                            {isBestSeller && <span className="badge badge-best-seller">Más Vendido</span>}
-                        </div>
-                    )}
-                </div>
-
-                <div className="product-info-overlay">
+                <div className="card-glass-overlay">
                     <div className="product-info">
                         <h3>{name}</h3>
                         <p className="quantity">Stock: {quantity} unidades</p>
-                        <p className="price-tag">${price}</p>
+                        <p className="price">${price}</p>
                     </div>
                 </div>
             </div>

@@ -47,63 +47,45 @@
 
 /* Compact Product Card - Mobile First */
 .product-card {
-    width: 100%;
-    max-width: 180px;
-    border-radius: 12px;
-    background: #fff;
+    min-width: 140px;
+    /* Much smaller for 2-item visibility potential */
+    border-radius: 20px;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    justify-content: flex-end;
+    border-radius: 12px;
+    background-color: #eee;
 }
 
-.product-image-wrapper {
-    position: relative;
+.card-glass-overlay {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 30%, rgba(0, 0, 0, 0) 100%);
+    backdrop-filter: blur(4px);
     width: 100%;
-    aspect-ratio: 1/1;
-    background: #f8f8f8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.product-image-main {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 8px;
-}
-
-.product-info-overlay {
-    width: 100%;
-    padding: 12px 10px;
-    background: #fff;
-    color: var(--text-dark);
+    padding: 10px;
+    transition: 0.3s;
+    color: #fff;
 }
 
 .product-info h3 {
     font-size: 0.85rem;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    color: var(--text-dark);
 }
 
 .product-info p {
     font-size: 0.7rem;
     margin-bottom: 2px;
-    color: var(--text-muted);
 }
 
-.product-info .price-tag {
+.product-info .price {
     font-weight: 700;
-    color: var(--accent-pink-dark);
-    font-size: 0.9rem;
-    margin-top: 4px;
+    color: var(--accent-pink);
 }
 
 /* Modal Refined for Mobile */
@@ -395,16 +377,14 @@
 }
 
 .shelf-row.featured .product-card {
-    width: calc(100vw - 40px);
+    width: 100%;
     max-width: 420px;
-    height: auto;
-    border-radius: 16px;
+    height: 340px;
     margin: 0 auto;
+    border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(0, 0, 0, 0.06);
     transition: box-shadow 0.3s ease, transform 0.2s ease;
-    scroll-snap-align: center;
-    flex-shrink: 0;
 }
 
 .shelf-row.featured .carousel-item {
@@ -412,10 +392,6 @@
     display: flex;
     justify-content: center;
     scroll-snap-align: center;
-}
-
-.shelf-row.featured .product-image-wrapper {
-    aspect-ratio: 16/9;
 }
 
 .shelf-row.featured .product-card:hover {
@@ -535,14 +511,75 @@
     .shelf-row {
         gap: 8px;
     }
-    .product-card {
-        max-width: calc(50% - 4px);
+
+    .shelf-row.featured {
+        padding: 16px 0;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+    }
+
+    .shelf-row.featured .product-card {
+        width: calc(100vw - 100px);
+        max-width: none;
+        height: 300px;
+        flex-shrink: 0;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+        margin: 0 auto;
+    }
+
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        z-index: 15;
+    }
+
+    .nav-btn.prev {
+        left: 6px;
+    }
+
+    .nav-btn.next {
+        right: 6px;
     }
 }
 
 @media (max-width: 480px) {
-    .product-card {
-        max-width: calc(50% - 4px);
+    .shelf-row.featured {
+        padding: 12px 0;
+        overflow-x: scroll;
+        scroll-snap-type: x mandatory;
+    }
+
+    .shelf-row.featured .product-card {
+        width: calc(100vw - 80px);
+        max-width: none;
+        height: 280px;
+        flex-shrink: 0;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+        margin: 0 auto;
+    }
+
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        z-index: 15;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .nav-btn.prev {
+        left: 8px;
+    }
+
+    .nav-btn.next {
+        right: 8px;
+    }
+
+    .nav-btn:active {
+        transform: translateY(-50%) scale(0.95);
     }
 }
 
