@@ -40,6 +40,12 @@ let InventoryController = class InventoryController {
     deleteCategory(id) {
         return this.inventoryService.deleteCategory(id);
     }
+    updateCategory(id, body) {
+        return this.inventoryService.updateCategory(id, body);
+    }
+    moveCategory(id, body) {
+        return this.inventoryService.moveCategory(id, body.direction);
+    }
     findProductsByCategory(id) {
         return this.inventoryService.getProductsByCategory(id);
     }
@@ -60,6 +66,9 @@ let InventoryController = class InventoryController {
     }
     updateStock(id, body) {
         return this.inventoryService.updateStock(id, body.cantidad);
+    }
+    moveProduct(id, body) {
+        return this.inventoryService.moveProduct(id, body.direction);
     }
 };
 exports.InventoryController = InventoryController;
@@ -110,6 +119,22 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "deleteCategory", null);
 __decorate([
+    (0, common_1.Patch)('category/:id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "updateCategory", null);
+__decorate([
+    (0, common_1.Patch)('category/:id/order'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "moveCategory", null);
+__decorate([
     (0, common_1.Get)('category/:id/products'),
     __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
     __metadata("design:type", Function),
@@ -158,6 +183,14 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", void 0)
 ], InventoryController.prototype, "updateStock", null);
+__decorate([
+    (0, common_1.Patch)('product/:id/order'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", void 0)
+], InventoryController.prototype, "moveProduct", null);
 exports.InventoryController = InventoryController = __decorate([
     (0, common_1.Controller)('inventory'),
     __metadata("design:paramtypes", [inventory_service_1.InventoryService])

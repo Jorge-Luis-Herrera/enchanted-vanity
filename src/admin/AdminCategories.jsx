@@ -6,6 +6,7 @@ import "./AdminProducts.css"; // Reutilizamos estilos del admin
 const AdminCategories = () => {
     const [shelves, setShelves] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [editingId, setEditingId] = useState(null);
     const [newCategory, setNewCategory] = useState({ nombre: "", shelfId: "" });
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -55,6 +56,23 @@ const AdminCategories = () => {
         }
     };
 
+    const handleEdit = (cat) => {
+        setEditingId(cat.id);
+        setNewCategory({
+            nombre: cat.nombre,
+            shelfId: cat.shelfId
+        });
+        setSelectedFile(null);
+        setPreviewUrl(cat.imagenUrl ? `${STATIC_URL}${cat.imagenUrl}` : null);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setNewCategory({ nombre: "", shelfId: shelves[0]?.id || "" });
+        setSelectedFile(null);
+        setPreviewUrl(null);
+    };
+
     const fileToBase64 = (file) => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -62,7 +80,7 @@ const AdminCategories = () => {
         reader.onerror = error => reject(error);
     });
 
-    const handleCreate = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
         const nombreTrim = newCategory.nombre.trim();
@@ -91,11 +109,16 @@ const AdminCategories = () => {
         const payload = {
             nombre: nombreTrim,
             shelfId: parseInt(newCategory.shelfId, 10),
-            imagenUrl: base64Image
+            imagenUrl: base64Image || (editingId ? categories.find(c => c.id === editingId)?.imagenUrl : null)
         };
 
-        fetch(`${API_URL}/inventory/category`, {
-            method: "POST",
+        const url = editingId
+            ? `${API_URL}/inventory/category/${editingId}`
+            : `${API_URL}/inventory/category`;
+        const method = editingId ? "PATCH" : "POST";
+
+        fetch(url, {
+            method,
             headers: {
                 "Content-Type": "application/json",
                 ...getAuthHeaders()
@@ -103,14 +126,22 @@ const AdminCategories = () => {
             body: JSON.stringify(payload)
         })
             .then(() => {
-                setNewCategory({ nombre: "", shelfId: shelves[0]?.id || "" });
-                setSelectedFile(null);
-                setPreviewUrl(null);
+                handleCancelEdit();
                 setError("");
                 fetchData();
-                alert("Categoría creada correctamente");
+                alert(editingId ? "Categoría actualizada" : "Categoría creada");
             })
-            .catch(err => console.error("Error creando categoría", err));
+            .catch(err => console.error("Error guardando categoría", err));
+    };
+
+    const handleMove = (id, direction) => {
+        fetch(`${API_URL}/inventory/category/${id}/order`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            body: JSON.stringify({ direction })
+        })
+            .then(() => fetchData())
+            .catch(err => console.error("Error reordenando categoría", err));
     };
 
     const handleDelete = (id) => {
@@ -124,8 +155,8 @@ const AdminCategories = () => {
         <div className="admin-view">
             <h1>Gestión de Categorías</h1>
 
-            <form className="admin-form" onSubmit={handleCreate}>
-                <h3>Nueva Categoría</h3>
+            <form className="admin-form" onSubmit={handleSubmit}>
+                <h3>{editingId ? `Editando Categoría #${editingId}` : 'Nueva Categoría'}</h3>
                 {error && <p className="admin-form-error">{error}</p>}
                 <div className="form-grid">
                     <div className="field">
@@ -168,7 +199,16 @@ const AdminCategories = () => {
                             {selectedFile ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
                         </label>
                     </div>
-                    <button type="submit" className="add-btn">Guardar Categoría</button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button type="submit" className="add-btn">
+                            {editingId ? 'Actualizar' : 'Guardar Categoría'}
+                        </button>
+                        {editingId && (
+                            <button type="button" className="del-btn" onClick={handleCancelEdit}>
+                                Cancelar
+                            </button>
+                        )}
+                    </div>
                 </div>
             </form>
 
@@ -176,6 +216,7 @@ const AdminCategories = () => {
                 <table className="admin-table">
                     <thead>
                         <tr>
+                            <th>Orden</th>
                             <th>Imagen</th>
                             <th>Nombre</th>
                             <th>Estantería</th>
@@ -183,8 +224,22 @@ const AdminCategories = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {categories.map(cat => (
+                        {categories.map((cat, index) => (
                             <tr key={cat.id}>
+                                <td>
+                                    <div className="order-controls">
+                                        <button
+                                            className="order-btn"
+                                            disabled={index === 0}
+                                            onClick={() => handleMove(cat.id, 'up')}
+                                        >↑</button>
+                                        <button
+                                            className="order-btn"
+                                            disabled={index === categories.length - 1}
+                                            onClick={() => handleMove(cat.id, 'down')}
+                                        >↓</button>
+                                    </div>
+                                </td>
                                 <td>
                                     {cat.imagenUrl ? (
                                         <img
@@ -199,9 +254,14 @@ const AdminCategories = () => {
                                 <td>{cat.nombre}</td>
                                 <td>{cat.estanteria?.titulo || 'Sin estantería'}</td>
                                 <td>
-                                    <button className="del-btn" onClick={() => handleDelete(cat.id)}>
-                                        Eliminar
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '4px' }}>
+                                        <button className="edit-btn" onClick={() => handleEdit(cat)}>
+                                            Editar
+                                        </button>
+                                        <button className="del-btn" onClick={() => handleDelete(cat.id)}>
+                                            Eliminar
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

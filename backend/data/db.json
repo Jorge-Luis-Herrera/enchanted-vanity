@@ -3,12 +3,14 @@
     {
       "id": 1771108836678,
       "titulo": "Estante2",
-      "categorias": []
+      "categorias": [],
+      "order": 0
     },
     {
       "id": 1771109631179,
       "titulo": "Estante1",
-      "categorias": []
+      "categorias": [],
+      "order": 1
     }
   ],
   "categories": [
@@ -17,14 +19,16 @@
       "nombre": "Cara",
       "shelfId": 1771109631179,
       "imagenUrl": "cat-1771110051374.jpeg",
-      "productos": []
+      "productos": [],
+      "order": 0
     },
     {
       "id": 1771110066128,
       "nombre": "Maquillaje",
       "shelfId": 1771108836678,
       "imagenUrl": "cat-1771110066128.jpeg",
-      "productos": []
+      "productos": [],
+      "order": 1
     }
   ],
   "products": [
@@ -40,7 +44,8 @@
       ],
       "esCombo": true,
       "esOferta": true,
-      "imagenUrl": "prod-1771110158921.jpeg"
+      "imagenUrl": "prod-1771110158921.jpeg",
+      "order": 0
     },
     {
       "id": 1771110180230,
@@ -54,7 +59,8 @@
       ],
       "esCombo": true,
       "esOferta": true,
-      "imagenUrl": "prod-1771110180229.jpeg"
+      "imagenUrl": "prod-1771110180229.jpeg",
+      "order": 1
     },
     {
       "id": 1771971790614,
@@ -69,7 +75,8 @@
       "categoryIds": [
         1771110051375,
         1771110066128
-      ]
+      ],
+      "order": 2
     }
   ]
 }

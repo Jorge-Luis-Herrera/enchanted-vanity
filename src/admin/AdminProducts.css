@@ -313,3 +313,36 @@
     background: #3b82f6;
     color: white;
 }
+
+/* ─── Order Controls ─── */
+.order-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.order-btn {
+    background: #f3f4f6;
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    transition: 0.2s;
+}
+
+.order-btn:hover:not(:disabled) {
+    background: var(--accent-pink);
+    border-color: var(--accent-pink-dark);
+}
+
+.order-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}

@@ -170,6 +170,16 @@ const AdminProducts = () => {
             .catch(err => console.error("Error actualizando stock", err));
     };
 
+    const handleMove = (id, direction) => {
+        fetch(`${API_URL}/inventory/product/${id}/order`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            body: JSON.stringify({ direction })
+        })
+            .then(() => fetchData())
+            .catch(err => console.error("Error reordenando producto", err));
+    };
+
     return (
         <div className="admin-view">
             <h1>Gestión de Productos</h1>
@@ -294,6 +304,7 @@ const AdminProducts = () => {
                 <table className="admin-table">
                     <thead>
                         <tr>
+                            <th>Orden</th>
                             <th>Miniatura</th>
                             <th>Nombre</th>
                             <th>Stock</th>
@@ -304,8 +315,22 @@ const AdminProducts = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {products.map(product => (
+                        {products.map((product, index) => (
                             <tr key={product.id}>
+                                <td>
+                                    <div className="order-controls">
+                                        <button
+                                            className="order-btn"
+                                            disabled={index === 0}
+                                            onClick={() => handleMove(product.id, 'up')}
+                                        >↑</button>
+                                        <button
+                                            className="order-btn"
+                                            disabled={index === products.length - 1}
+                                            onClick={() => handleMove(product.id, 'down')}
+                                        >↓</button>
+                                    </div>
+                                </td>
                                 <td>
                                     {product.imagenUrl ? (
                                         <img

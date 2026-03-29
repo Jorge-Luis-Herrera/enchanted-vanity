@@ -19,8 +19,11 @@ export declare class InventoryService implements OnModuleInit {
         nombre: string;
         shelfId: number;
         imagenUrl: string;
+        order: any;
         productos: any[];
     }>;
+    updateCategory(id: number, updateData: any): Promise<any>;
+    moveCategory(id: number, direction: 'up' | 'down'): Promise<any>;
     deleteCategory(id: number): Promise<void>;
     getProductsByCategory(categoryId: number): Promise<any>;
     getAllProducts(): Promise<any>;
@@ -36,8 +39,10 @@ export declare class InventoryService implements OnModuleInit {
         precio: number;
         imagenUrl: any;
         categoryIds: any;
+        order: any;
     }>;
     updateProduct(id: number, updateData: any): Promise<any>;
     deleteProduct(id: number): Promise<void>;
     updateStock(id: number, cantidad: number): Promise<any>;
+    moveProduct(id: number, direction: 'up' | 'down'): Promise<any>;
 }

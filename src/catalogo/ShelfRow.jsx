@@ -36,7 +36,6 @@ const ShelfRow = ({ title, subtitle, items, isFeatured, onCategoryClick }) => {
                     {items && items.map((item) => (
                         <div className={isFeatured ? "carousel-item" : "shelf-item"} key={item.id}>
                             {isFeatured ? (
-                                // Banner de combos/ofertas: mostramos ProductCard con badges
                                 <ProductCard
                                     name={item.nombre}
                                     descripcion={item.descripcion}
@@ -47,10 +46,7 @@ const ShelfRow = ({ title, subtitle, items, isFeatured, onCategoryClick }) => {
                                     esOferta={item.esOferta}
                                     isBestSeller={item.isBestSeller}
                                 />
-
-
                             ) : (
-                                // Estanterías normales: mostramos CategoryCard
                                 <CategoryCard
                                     nombre={item.nombre}
                                     imagenUrl={item.imagenUrl}

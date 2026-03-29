@@ -21,9 +21,14 @@ export declare class InventoryController {
         nombre: string;
         shelfId: number;
         imagenUrl: string;
+        order: any;
         productos: any[];
     }>;
     deleteCategory(id: number): Promise<void>;
+    updateCategory(id: number, body: any): Promise<any>;
+    moveCategory(id: number, body: {
+        direction: 'up' | 'down';
+    }): Promise<any>;
     findProductsByCategory(id: number): Promise<any>;
     findAllProducts(): Promise<any>;
     findFeaturedProducts(): Promise<any>;
@@ -38,10 +43,14 @@ export declare class InventoryController {
         precio: number;
         imagenUrl: any;
         categoryIds: any;
+        order: any;
     }>;
     updateProduct(id: number, body: any): Promise<any>;
     deleteProduct(id: number): Promise<void>;
     updateStock(id: number, body: {
         cantidad: number;
+    }): Promise<any>;
+    moveProduct(id: number, body: {
+        direction: 'up' | 'down';
     }): Promise<any>;
 }
