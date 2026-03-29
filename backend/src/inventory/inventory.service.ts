@@ -26,9 +26,14 @@ export class InventoryService implements OnModuleInit {
     }
 
     if (!data || typeof data !== 'object') data = {};
-    if (!Array.isArray(data.shelves)) data.shelves = [{ id: 1, titulo: 'Estantería Principal' }];
-    if (!Array.isArray(data.categories)) data.categories = [{ id: 1, nombre: 'General', shelfId: 1 }];
+    if (!Array.isArray(data.shelves)) data.shelves = [{ id: 1, titulo: 'Estantería Principal', order: 0 }];
+    if (!Array.isArray(data.categories)) data.categories = [{ id: 1, nombre: 'General', shelfId: 1, order: 0 }];
     if (!Array.isArray(data.products)) data.products = [];
+
+    // Ensure all items have an 'order' field
+    data.shelves.forEach((s, i) => { if (s.order === undefined) s.order = i; });
+    data.categories.forEach((c, i) => { if (c.order === undefined) c.order = i; });
+    data.products.forEach((p, i) => { if (p.order === undefined) p.order = i; });
 
     this.saveData(data);
   }
@@ -74,15 +79,20 @@ export class InventoryService implements OnModuleInit {
   // Estanterías
   async getInventario() {
     const data = this.getData();
-    return data.shelves.map(shelf => ({
-      ...shelf,
-      categorias: data.categories
-        .filter(c => Number(c.shelfId) === Number(shelf.id))
-        .map(cat => ({
-          ...cat,
-          productos: data.products.filter(p => p.categoryIds?.map(Number).includes(Number(cat.id)))
-        }))
-    }));
+    return data.shelves
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map(shelf => ({
+        ...shelf,
+        categorias: data.categories
+          .filter(c => Number(c.shelfId) === Number(shelf.id))
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map(cat => ({
+            ...cat,
+            productos: data.products
+              .filter(p => p.categoryIds?.map(Number).includes(Number(cat.id)))
+              .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          }))
+      }));
   }
 
   async createShelf(titulo: string) {
@@ -105,10 +115,12 @@ export class InventoryService implements OnModuleInit {
   // Categorías
   async getAllCategories() {
     const data = this.getData();
-    return data.categories.map(c => ({
-      ...c,
-      estanteria: data.shelves.find(s => Number(s.id) === Number(c.shelfId))
-    }));
+    return data.categories
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map(c => ({
+        ...c,
+        estanteria: data.shelves.find(s => Number(s.id) === Number(c.shelfId))
+      }));
   }
 
   async createCategory(nombre: string, shelfId: number, imagenUrl?: string) {
@@ -120,10 +132,58 @@ export class InventoryService implements OnModuleInit {
       ? this.saveImage(imagenUrl, 'cat')
       : imagenUrl;
 
-    const newCategory = { id: Date.now(), nombre, shelfId: Number(shelfId), imagenUrl: finalImageUrl, productos: [] };
+    const maxOrder = data.categories.reduce((max, c) => Math.max(max, c.order ?? 0), -1);
+    const newCategory = {
+      id: Date.now(),
+      nombre,
+      shelfId: Number(shelfId),
+      imagenUrl: finalImageUrl,
+      order: maxOrder + 1,
+      productos: []
+    };
     data.categories.push(newCategory);
     this.saveData(data);
     return newCategory;
+  }
+
+  async updateCategory(id: number, updateData: any) {
+    const data = this.getData();
+    const index = data.categories.findIndex(c => Number(c.id) === Number(id));
+    if (index === -1) throw new NotFoundException('Categoría no encontrada');
+
+    if (updateData.imagenUrl && updateData.imagenUrl.startsWith('data:')) {
+      updateData.imagenUrl = this.saveImage(updateData.imagenUrl, 'cat');
+    }
+
+    const existing = data.categories[index];
+    const updatedCategory = {
+      ...existing,
+      ...updateData,
+      id: existing.id, // Ensure ID doesn't change
+    };
+    data.categories[index] = updatedCategory;
+    this.saveData(data);
+    return updatedCategory;
+  }
+
+  async moveCategory(id: number, direction: 'up' | 'down') {
+    const data = this.getData();
+    const categories = data.categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const index = categories.findIndex(c => Number(c.id) === Number(id));
+    if (index === -1) throw new NotFoundException('Categoría no encontrada');
+
+    if (direction === 'up' && index > 0) {
+      const temp = categories[index].order;
+      categories[index].order = categories[index - 1].order;
+      categories[index - 1].order = temp;
+    } else if (direction === 'down' && index < categories.length - 1) {
+      const temp = categories[index].order;
+      categories[index].order = categories[index + 1].order;
+      categories[index + 1].order = temp;
+    }
+
+    this.saveData(data);
+    return categories;
   }
 
   async deleteCategory(id: number) {
@@ -135,16 +195,20 @@ export class InventoryService implements OnModuleInit {
 
   async getProductsByCategory(categoryId: number) {
     const data = this.getData();
-    return data.products.filter(p => p.categoryIds?.map(Number).includes(Number(categoryId)));
+    return data.products
+      .filter(p => p.categoryIds?.map(Number).includes(Number(categoryId)))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }
 
   // Productos
   async getAllProducts() {
     const data = this.getData();
-    return data.products.map(p => ({
-      ...p,
-      categorias: data.categories.filter(c => p.categoryIds?.map(Number).includes(Number(c.id)))
-    }));
+    return data.products
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+      .map(p => ({
+        ...p,
+        categorias: data.categories.filter(c => p.categoryIds?.map(Number).includes(Number(c.id)))
+      }));
   }
 
   async getFeaturedProducts() {
@@ -161,6 +225,7 @@ export class InventoryService implements OnModuleInit {
     }
 
     // Ensure required fields have sensible defaults
+    const maxOrder = data.products.reduce((max, p) => Math.max(max, p.order ?? 0), -1);
     const newProduct = {
       id: Date.now(),
       nombre: productData.nombre ?? '',
@@ -172,6 +237,7 @@ export class InventoryService implements OnModuleInit {
       precio: Number(productData.precio) || 0,
       imagenUrl: productData.imagenUrl ?? null,
       categoryIds: productData.categoryIds?.map(Number) || [],
+      order: maxOrder + 1,
     };
     data.products.push(newProduct);
     this.saveData(data);
@@ -220,5 +286,28 @@ export class InventoryService implements OnModuleInit {
     product.cantidad = cantidad;
     this.saveData(data);
     return product;
+  }
+
+  async moveProduct(id: number, direction: 'up' | 'down') {
+    const data = this.getData();
+    // Reorder only within products that share at least one category to maintain relative local order
+    // But actually the user probably wants global reordering in the admin table.
+    // Let's do global reordering for simplicity and consistency with categories.
+    const products = data.products.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    const index = products.findIndex(p => Number(p.id) === Number(id));
+    if (index === -1) throw new NotFoundException('Producto no encontrado');
+
+    if (direction === 'up' && index > 0) {
+      const temp = products[index].order;
+      products[index].order = products[index - 1].order;
+      products[index - 1].order = temp;
+    } else if (direction === 'down' && index < products.length - 1) {
+      const temp = products[index].order;
+      products[index].order = products[index + 1].order;
+      products[index + 1].order = temp;
+    }
+
+    this.saveData(data);
+    return products;
   }
 }

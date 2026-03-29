@@ -54,6 +54,19 @@ export class InventoryController {
     return this.inventoryService.deleteCategory(id);
   }
 
+  @Patch('category/:id')
+  updateCategory(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
+    return this.inventoryService.updateCategory(id, body);
+  }
+
+  @Patch('category/:id/order')
+  moveCategory(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { direction: 'up' | 'down' },
+  ) {
+    return this.inventoryService.moveCategory(id, body.direction);
+  }
+
   @Get('category/:id/products')
   findProductsByCategory(@Param('id', ParseIntPipe) id: number) {
     return this.inventoryService.getProductsByCategory(id);
@@ -90,5 +103,13 @@ export class InventoryController {
     @Body() body: { cantidad: number },
   ) {
     return this.inventoryService.updateStock(id, body.cantidad);
+  }
+
+  @Patch('product/:id/order')
+  moveProduct(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { direction: 'up' | 'down' },
+  ) {
+    return this.inventoryService.moveProduct(id, body.direction);
   }
 }

@@ -68,11 +68,17 @@ let InventoryService = class InventoryService {
         if (!data || typeof data !== 'object')
             data = {};
         if (!Array.isArray(data.shelves))
-            data.shelves = [{ id: 1, titulo: 'Estantería Principal' }];
+            data.shelves = [{ id: 1, titulo: 'Estantería Principal', order: 0 }];
         if (!Array.isArray(data.categories))
-            data.categories = [{ id: 1, nombre: 'General', shelfId: 1 }];
+            data.categories = [{ id: 1, nombre: 'General', shelfId: 1, order: 0 }];
         if (!Array.isArray(data.products))
             data.products = [];
+        data.shelves.forEach((s, i) => { if (s.order === undefined)
+            s.order = i; });
+        data.categories.forEach((c, i) => { if (c.order === undefined)
+            c.order = i; });
+        data.products.forEach((p, i) => { if (p.order === undefined)
+            p.order = i; });
         this.saveData(data);
     }
     getData() {
@@ -112,13 +118,18 @@ let InventoryService = class InventoryService {
     }
     async getInventario() {
         const data = this.getData();
-        return data.shelves.map(shelf => ({
+        return data.shelves
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map(shelf => ({
             ...shelf,
             categorias: data.categories
                 .filter(c => Number(c.shelfId) === Number(shelf.id))
+                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
                 .map(cat => ({
                 ...cat,
-                productos: data.products.filter(p => p.categoryIds?.map(Number).includes(Number(cat.id)))
+                productos: data.products
+                    .filter(p => p.categoryIds?.map(Number).includes(Number(cat.id)))
+                    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
             }))
         }));
     }
@@ -137,7 +148,9 @@ let InventoryService = class InventoryService {
     }
     async getAllCategories() {
         const data = this.getData();
-        return data.categories.map(c => ({
+        return data.categories
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map(c => ({
             ...c,
             estanteria: data.shelves.find(s => Number(s.id) === Number(c.shelfId))
         }));
@@ -150,10 +163,55 @@ let InventoryService = class InventoryService {
         const finalImageUrl = imagenUrl && imagenUrl.startsWith('data:')
             ? this.saveImage(imagenUrl, 'cat')
             : imagenUrl;
-        const newCategory = { id: Date.now(), nombre, shelfId: Number(shelfId), imagenUrl: finalImageUrl, productos: [] };
+        const maxOrder = data.categories.reduce((max, c) => Math.max(max, c.order ?? 0), -1);
+        const newCategory = {
+            id: Date.now(),
+            nombre,
+            shelfId: Number(shelfId),
+            imagenUrl: finalImageUrl,
+            order: maxOrder + 1,
+            productos: []
+        };
         data.categories.push(newCategory);
         this.saveData(data);
         return newCategory;
+    }
+    async updateCategory(id, updateData) {
+        const data = this.getData();
+        const index = data.categories.findIndex(c => Number(c.id) === Number(id));
+        if (index === -1)
+            throw new common_1.NotFoundException('Categoría no encontrada');
+        if (updateData.imagenUrl && updateData.imagenUrl.startsWith('data:')) {
+            updateData.imagenUrl = this.saveImage(updateData.imagenUrl, 'cat');
+        }
+        const existing = data.categories[index];
+        const updatedCategory = {
+            ...existing,
+            ...updateData,
+            id: existing.id,
+        };
+        data.categories[index] = updatedCategory;
+        this.saveData(data);
+        return updatedCategory;
+    }
+    async moveCategory(id, direction) {
+        const data = this.getData();
+        const categories = data.categories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const index = categories.findIndex(c => Number(c.id) === Number(id));
+        if (index === -1)
+            throw new common_1.NotFoundException('Categoría no encontrada');
+        if (direction === 'up' && index > 0) {
+            const temp = categories[index].order;
+            categories[index].order = categories[index - 1].order;
+            categories[index - 1].order = temp;
+        }
+        else if (direction === 'down' && index < categories.length - 1) {
+            const temp = categories[index].order;
+            categories[index].order = categories[index + 1].order;
+            categories[index + 1].order = temp;
+        }
+        this.saveData(data);
+        return categories;
     }
     async deleteCategory(id) {
         const data = this.getData();
@@ -162,11 +220,15 @@ let InventoryService = class InventoryService {
     }
     async getProductsByCategory(categoryId) {
         const data = this.getData();
-        return data.products.filter(p => p.categoryIds?.map(Number).includes(Number(categoryId)));
+        return data.products
+            .filter(p => p.categoryIds?.map(Number).includes(Number(categoryId)))
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }
     async getAllProducts() {
         const data = this.getData();
-        return data.products.map(p => ({
+        return data.products
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+            .map(p => ({
             ...p,
             categorias: data.categories.filter(c => p.categoryIds?.map(Number).includes(Number(c.id)))
         }));
@@ -180,6 +242,7 @@ let InventoryService = class InventoryService {
         if (productData.imagenUrl && productData.imagenUrl.startsWith('data:')) {
             productData.imagenUrl = this.saveImage(productData.imagenUrl, 'prod');
         }
+        const maxOrder = data.products.reduce((max, p) => Math.max(max, p.order ?? 0), -1);
         const newProduct = {
             id: Date.now(),
             nombre: productData.nombre ?? '',
@@ -191,6 +254,7 @@ let InventoryService = class InventoryService {
             precio: Number(productData.precio) || 0,
             imagenUrl: productData.imagenUrl ?? null,
             categoryIds: productData.categoryIds?.map(Number) || [],
+            order: maxOrder + 1,
         };
         data.products.push(newProduct);
         this.saveData(data);
@@ -234,6 +298,25 @@ let InventoryService = class InventoryService {
         product.cantidad = cantidad;
         this.saveData(data);
         return product;
+    }
+    async moveProduct(id, direction) {
+        const data = this.getData();
+        const products = data.products.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const index = products.findIndex(p => Number(p.id) === Number(id));
+        if (index === -1)
+            throw new common_1.NotFoundException('Producto no encontrado');
+        if (direction === 'up' && index > 0) {
+            const temp = products[index].order;
+            products[index].order = products[index - 1].order;
+            products[index - 1].order = temp;
+        }
+        else if (direction === 'down' && index < products.length - 1) {
+            const temp = products[index].order;
+            products[index].order = products[index + 1].order;
+            products[index + 1].order = temp;
+        }
+        this.saveData(data);
+        return products;
     }
 };
 exports.InventoryService = InventoryService;
