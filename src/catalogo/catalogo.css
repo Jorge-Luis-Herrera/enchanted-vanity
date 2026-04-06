@@ -24,14 +24,14 @@
 }
 
 .shelf-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
     padding: 10px 0;
 }
 
 .shelf-row.featured {
+    display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
     justify-content: flex-start;
@@ -42,12 +42,12 @@
 }
 
 .shelf-item {
-    flex-shrink: 0;
+    width: 100%;
 }
 
 /* Compact Product Card - Mobile First */
 .product-card {
-    min-width: 140px;
+    width: 100%;
     /* Much smaller for 2-item visibility potential */
     border-radius: 20px;
     height: 200px;
@@ -680,7 +680,7 @@
 
 /* ─── Category Card ─── */
 .category-card {
-    min-width: 140px;
+    width: 100%;
     height: 200px;
     border-radius: 16px;
     position: relative;

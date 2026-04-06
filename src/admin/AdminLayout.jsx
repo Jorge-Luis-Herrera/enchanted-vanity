@@ -22,7 +22,6 @@ const AdminLayout = () => {
                     <Link to="/admin/estanterias" className="nav-item">Estanterías</Link>
                     <Link to="/admin/categorias" className="nav-item">Categorías</Link>
                     <Link to="/admin/productos" className="nav-item">Productos</Link>
-                    <Link to="/" className="nav-item return-shop">Ver Tienda</Link>
                 </nav>
                 <button onClick={handleLogout} className="logout-btn">Cerrar Sesión</button>
             </aside>
