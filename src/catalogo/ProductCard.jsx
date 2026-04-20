@@ -89,10 +89,8 @@ const ProductCard = ({ name, isOutOfStock, price, imagenUrl, esCombo, esOferta, 
                                         </span>
                                     </div>
                                 </div>
-                                {descripcion ? (
+                                {descripcion && (
                                     <p className="description">{descripcion}</p>
-                                ) : (
-                                    <p className="description-placeholder">Este producto ya está disponible en nuestra colección exclusiva.</p>
                                 )}
 
                                 <a
