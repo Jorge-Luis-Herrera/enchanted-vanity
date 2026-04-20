@@ -11,7 +11,7 @@ const AdminProducts = () => {
     const emptyProduct = {
         nombre: "",
         descripcion: "",
-        cantidad: 0,
+        isOutOfStock: false,
         precio: 0,
         categoryIds: [],
         esCombo: false,
@@ -65,7 +65,7 @@ const AdminProducts = () => {
         setFormData({
             nombre: product.nombre,
             descripcion: product.descripcion || "",
-            cantidad: product.cantidad,
+            isOutOfStock: product.isOutOfStock || false,
             precio: product.precio,
             categoryIds: product.categorias?.map(c => c.id) || [],
             esCombo: product.esCombo || false,
@@ -98,12 +98,7 @@ const AdminProducts = () => {
             setError("El nombre del producto no puede estar vacío.");
             return;
         }
-        const cantidad = parseInt(formData.cantidad, 10);
         const precio = parseFloat(formData.precio);
-        if (isNaN(cantidad) || cantidad < 0) {
-            setError("El stock debe ser un número mayor o igual a 0.");
-            return;
-        }
         if (isNaN(precio) || precio <= 0) {
             setError("El precio debe ser un número mayor que 0.");
             return;
@@ -121,7 +116,7 @@ const AdminProducts = () => {
         const payload = {
             nombre: nombreTrim,
             descripcion: formData.descripcion,
-            cantidad,
+            isOutOfStock: formData.isOutOfStock,
             precio,
             categoryIds: formData.categoryIds,
             esCombo: formData.esCombo,
@@ -159,15 +154,13 @@ const AdminProducts = () => {
             .catch(err => console.error("Error eliminando producto", err));
     };
 
-    const handleUpdateStock = (id, currentStock, delta) => {
-        const newStock = Math.max(0, currentStock + delta);
-        fetch(`${API_URL}/inventory/product/${id}/stock`, {
+    const handleToggleAvailability = (id) => {
+        fetch(`${API_URL}/inventory/product/${id}/availability`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-            body: JSON.stringify({ cantidad: newStock })
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() }
         })
             .then(() => fetchData())
-            .catch(err => console.error("Error actualizando stock", err));
+            .catch(err => console.error("Error actualizando disponibilidad", err));
     };
 
     const handleMove = (id, direction) => {
@@ -207,12 +200,14 @@ const AdminProducts = () => {
                         />
                     </div>
                     <div className="field">
-                        <label>Stock Inicial</label>
-                        <input
-                            type="number"
-                            value={formData.cantidad}
-                            onChange={(e) => { setFormData({ ...formData, cantidad: parseInt(e.target.value, 10) || 0 }); setError(""); }}
-                        />
+                        <label className="checkbox-label" style={{ marginTop: '30px' }}>
+                            <input
+                                type="checkbox"
+                                checked={formData.isOutOfStock}
+                                onChange={(e) => setFormData({ ...formData, isOutOfStock: e.target.checked })}
+                            />
+                            ¿Producto Agotado?
+                        </label>
                     </div>
                     <div className="field">
                         <label>Precio ($)</label>
@@ -307,7 +302,7 @@ const AdminProducts = () => {
                             <th>Orden</th>
                             <th>Miniatura</th>
                             <th>Nombre</th>
-                            <th>Stock</th>
+                            <th>Estado</th>
                             <th>Precio</th>
                             <th>Categorías</th>
                             <th>Tipo</th>
@@ -344,17 +339,13 @@ const AdminProducts = () => {
                                 </td>
                                 <td>{product.nombre}</td>
                                 <td>
-                                    <div className="stock-controls">
-                                        <button
-                                            className="stock-btn"
-                                            onClick={() => handleUpdateStock(product.id, product.cantidad, -1)}
-                                        >-</button>
-                                        <span className="stock-value">{product.cantidad}</span>
-                                        <button
-                                            className="stock-btn"
-                                            onClick={() => handleUpdateStock(product.id, product.cantidad, 1)}
-                                        >+</button>
-                                    </div>
+                                    <button
+                                        className={`stock-btn ${product.isOutOfStock ? 'is-out' : 'is-available'}`}
+                                        onClick={() => handleToggleAvailability(product.id)}
+                                        style={{ width: 'auto', padding: '4px 10px', fontSize: '0.75rem', borderRadius: '20px' }}
+                                    >
+                                        {product.isOutOfStock ? '🔴 Agotado' : '🟢 Disponible'}
+                                    </button>
                                 </td>
                                 <td>${product.precio}</td>
                                 <td style={{ fontSize: '0.75rem' }}>

@@ -3,11 +3,10 @@ import { createPortal } from "react-dom";
 import { STATIC_URL } from "../apiConfig";
 import "./catalogo.css";
 
-const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta, isBestSeller, descripcion }) => {
+const ProductCard = ({ name, isOutOfStock, price, imagenUrl, esCombo, esOferta, isBestSeller, descripcion }) => {
 
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
-    const [compraCantidad, setCompraCantidad] = useState(1);
 
     // Ruta base del backend para las imágenes
     const fullImgUrl = imagenUrl
@@ -27,18 +26,20 @@ const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta, isBe
     return (
         <>
             <div
-                className={`product-card ${(esCombo || esOferta || isBestSeller) ? "product-card-featured" : ""}`}
+                className={`product-card ${(esCombo || esOferta || isBestSeller || isOutOfStock) ? "product-card-featured" : ""}`}
 
                 onClick={() => setIsOpen(true)}
                 style={{
                     backgroundImage: fullImgUrl ? `url(${fullImgUrl})` : 'none',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    opacity: isOutOfStock ? 0.8 : 1
                 }}
             >
-                {(esCombo || esOferta || isBestSeller) && (
+                {(esCombo || esOferta || isBestSeller || isOutOfStock) && (
                     <div className="product-badges">
+                        {isOutOfStock && <span className="badge badge-agotado">Agotado</span>}
                         {esCombo && <span className="badge badge-combo">Combo</span>}
                         {esOferta && <span className="badge badge-oferta">Oferta</span>}
                         {isBestSeller && <span className="badge badge-best-seller">Más Vendido</span>}
@@ -48,7 +49,6 @@ const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta, isBe
                 <div className="card-glass-overlay">
                     <div className="product-info">
                         <h3>{name}</h3>
-                        <p className="quantity">Stock: {quantity} unidades</p>
                         <p className="price">${price}</p>
                     </div>
                 </div>
@@ -79,24 +79,14 @@ const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta, isBe
                                 <h2>{name}</h2>
                                 <div className="stats-grid">
                                     <div className="stat">
-                                        <label>Valor Unitario</label>
+                                        <label>Precio</label>
                                         <span>${price}</span>
                                     </div>
                                     <div className="stat">
-                                        <label>Existencias</label>
-                                        <span>{quantity} disponibles</span>
-                                    </div>
-                                    <div className="stat">
-                                        <label>Cantidad a comprar</label>
-                                        <div className="quantity-selector">
-                                            <button onClick={() => setCompraCantidad(Math.max(1, compraCantidad - 1))}>-</button>
-                                            <input
-                                                type="number"
-                                                value={compraCantidad}
-                                                onChange={(e) => setCompraCantidad(Math.max(1, parseInt(e.target.value) || 1))}
-                                            />
-                                            <button onClick={() => setCompraCantidad(compraCantidad + 1)}>+</button>
-                                        </div>
+                                        <label>Estado</label>
+                                        <span style={{ color: isOutOfStock ? '#ff4d4d' : '#4dff88' }}>
+                                            {isOutOfStock ? 'Agotado' : 'Disponible'}
+                                        </span>
                                     </div>
                                 </div>
                                 {descripcion ? (
@@ -106,12 +96,13 @@ const ProductCard = ({ name, quantity, price, imagenUrl, esCombo, esOferta, isBe
                                 )}
 
                                 <a
-                                    href={`https://wa.me/5356126873?text=${encodeURIComponent(`Hola, me interesa comprar ${compraCantidad} unidad(es) de: ${name}`)}`}
-                                    target="_blank"
+                                    href={isOutOfStock ? '#' : `https://wa.me/5356126873?text=${encodeURIComponent(`Hola, me interesa el producto: ${name}`)}`}
+                                    target={isOutOfStock ? '_self' : '_blank'}
                                     rel="noopener noreferrer"
-                                    className="action-btn"
+                                    className={`action-btn ${isOutOfStock ? 'btn-disabled' : ''}`}
+                                    onClick={(e) => isOutOfStock && e.preventDefault()}
                                 >
-                                    Adquirir Ahora
+                                    {isOutOfStock ? 'No Disponible' : 'Adquirir Ahora'}
                                 </a>
                             </div>
                         </div>

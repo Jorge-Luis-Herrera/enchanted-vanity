@@ -39,7 +39,7 @@ const ShelfRow = ({ title, subtitle, items, isFeatured, onCategoryClick }) => {
                                 <ProductCard
                                     name={item.nombre}
                                     descripcion={item.descripcion}
-                                    quantity={item.cantidad}
+                                    isOutOfStock={item.isOutOfStock}
                                     price={item.precio}
                                     imagenUrl={item.imagenUrl}
                                     esCombo={item.esCombo}

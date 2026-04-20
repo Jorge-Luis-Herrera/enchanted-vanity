@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+dist/
+.vite/
+
+# Backend
+backend/dist/
+backend/node_modules/
+backend/uploads/
+backend/data/db.json
+backend/data/*.PublishSettings
+backend/db.sqlite
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db

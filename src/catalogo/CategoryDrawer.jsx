@@ -82,7 +82,7 @@ const CategoryDrawer = ({ categoryId, categoryName, isOpen, onClose }) => {
                                     key={product.id}
                                     name={product.nombre}
                                     descripcion={product.descripcion}
-                                    quantity={product.cantidad}
+                                    isOutOfStock={product.isOutOfStock}
                                     price={product.precio}
                                     imagenUrl={product.imagenUrl}
                                     esCombo={product.esCombo}

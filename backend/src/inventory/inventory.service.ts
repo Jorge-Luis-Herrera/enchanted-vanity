@@ -29,11 +29,15 @@ export class InventoryService implements OnModuleInit {
     if (!Array.isArray(data.shelves)) data.shelves = [{ id: 1, titulo: 'Estantería Principal', order: 0 }];
     if (!Array.isArray(data.categories)) data.categories = [{ id: 1, nombre: 'General', shelfId: 1, order: 0 }];
     if (!Array.isArray(data.products)) data.products = [];
-
-    // Ensure all items have an 'order' field
-    data.shelves.forEach((s, i) => { if (s.order === undefined) s.order = i; });
-    data.categories.forEach((c, i) => { if (c.order === undefined) c.order = i; });
-    data.products.forEach((p, i) => { if (p.order === undefined) p.order = i; });
+    
+    // Migración de cantidad a isOutOfStock
+    data.products.forEach((p, i) => {
+      if (p.order === undefined) p.order = i;
+      if (p.isOutOfStock === undefined) {
+        p.isOutOfStock = Number(p.cantidad) <= 0;
+      }
+      delete p.cantidad; // Eliminar campo antiguo
+    });
 
     this.saveData(data);
   }
@@ -233,7 +237,7 @@ export class InventoryService implements OnModuleInit {
       esCombo: productData.esCombo ?? false,
       esOferta: productData.esOferta ?? false,
       isBestSeller: productData.isBestSeller ?? false, // New best seller flag
-      cantidad: Number(productData.cantidad) || 0,
+      isOutOfStock: productData.isOutOfStock ?? false,
       precio: Number(productData.precio) || 0,
       imagenUrl: productData.imagenUrl ?? null,
       categoryIds: productData.categoryIds?.map(Number) || [],
@@ -263,11 +267,12 @@ export class InventoryService implements OnModuleInit {
       isBestSeller: updateData.isBestSeller ?? existing.isBestSeller,
       esCombo: updateData.esCombo ?? existing.esCombo,
       esOferta: updateData.esOferta ?? existing.esOferta,
-      cantidad: updateData.cantidad !== undefined ? Number(updateData.cantidad) : existing.cantidad,
+      isOutOfStock: updateData.isOutOfStock !== undefined ? !!updateData.isOutOfStock : existing.isOutOfStock,
       precio: updateData.precio !== undefined ? Number(updateData.precio) : existing.precio,
       categoryIds: updateData.categoryIds ? updateData.categoryIds.map(Number) : existing.categoryIds,
       id: existing.id,
     };
+    delete (updatedProduct as any).cantidad;
     data.products[index] = updatedProduct;
     this.saveData(data);
     return updatedProduct;
@@ -279,11 +284,11 @@ export class InventoryService implements OnModuleInit {
     this.saveData(data);
   }
 
-  async updateStock(id: number, cantidad: number) {
+  async toggleAvailability(id: number) {
     const data = this.getData();
     const product = data.products.find(p => Number(p.id) === Number(id));
     if (!product) throw new NotFoundException('Producto no encontrado');
-    product.cantidad = cantidad;
+    product.isOutOfStock = !product.isOutOfStock;
     this.saveData(data);
     return product;
   }

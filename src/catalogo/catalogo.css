@@ -249,9 +249,16 @@
     transition: 0.3s;
 }
 
-.action-btn:active {
+.action-btn:active:not(.btn-disabled) {
     background: var(--accent-pink-dark);
     transform: scale(0.98);
+}
+
+.btn-disabled {
+    background: #cccccc !important;
+    color: #888888 !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
 }
 
 .close-modal {
@@ -485,6 +492,11 @@
 
 .badge-best-seller {
     background: linear-gradient(15deg, #db2777, #f472b6, #fbbf24, #f472b6, #db2777);
+}
+
+.badge-agotado {
+    background: linear-gradient(15deg, #4b5563, #9ca3af, #d1d5db, #9ca3af, #4b5563) !important;
+    color: #f3f4f6 !important;
 }
 
 

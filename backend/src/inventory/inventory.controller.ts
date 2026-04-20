@@ -97,12 +97,9 @@ export class InventoryController {
     return this.inventoryService.deleteProduct(id);
   }
 
-  @Patch('product/:id/stock')
-  updateStock(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: { cantidad: number },
-  ) {
-    return this.inventoryService.updateStock(id, body.cantidad);
+  @Patch('product/:id/availability')
+  toggleAvailability(@Param('id', ParseIntPipe) id: number) {
+    return this.inventoryService.toggleAvailability(id);
   }
 
   @Patch('product/:id/order')

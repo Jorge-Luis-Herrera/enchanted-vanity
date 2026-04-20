@@ -193,6 +193,33 @@
     color: var(--text-dark);
 }
 
+.stock-btn {
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.stock-btn.is-available {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.stock-btn.is-available:hover {
+    background: #22c55e;
+    color: white;
+}
+
+.stock-btn.is-out {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.stock-btn.is-out:hover {
+    background: #ef4444;
+    color: white;
+}
+
 .del-btn {
     background: #fee2e2;
     color: #b91c1c;
