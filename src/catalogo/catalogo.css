@@ -495,8 +495,8 @@
 }
 
 .badge-agotado {
-    background: linear-gradient(15deg, #4b5563, #9ca3af, #d1d5db, #9ca3af, #4b5563) !important;
-    color: #f3f4f6 !important;
+    background: linear-gradient(15deg, #f87171, #fca5a5, #fecaca, #fca5a5, #f87171) !important;
+    color: #fff !important;
 }
 
 

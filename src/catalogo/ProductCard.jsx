@@ -84,7 +84,7 @@ const ProductCard = ({ name, isOutOfStock, price, imagenUrl, esCombo, esOferta, 
                                     </div>
                                     <div className="stat">
                                         <label>Estado</label>
-                                        <span style={{ color: isOutOfStock ? '#ff4d4d' : '#4dff88' }}>
+                                        <span style={{ color: isOutOfStock ? '#f87171' : '#4dff88' }}>
                                             {isOutOfStock ? 'Agotado' : 'Disponible'}
                                         </span>
                                     </div>
